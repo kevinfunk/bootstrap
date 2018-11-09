@@ -127,14 +127,45 @@
            */
           createButtons: function () {
             this.$footer.find('.modal-buttons').remove();
+
+            // jQuery UI supports both objects and arrays. Unfortunately
+            // developers have misunderstood and abused this by simply placing
+            // the objects that should be in an array inside an object with
+            // arbitrary keys (likely to target specific buttons as a hack).
             var buttons = this.options.dialogOptions && this.options.dialogOptions.buttons || [];
+            if (!Array.isArray(buttons)) {
+              var array = [];
+              for (var k in buttons) {
+                // Support the proper object values: label => click callback.
+                if (typeof buttons[k] === 'function') {
+                  array.push({
+                    label: k,
+                    click: buttons[k],
+                  });
+                }
+                // Support nested objects, but log a warning.
+                else if (buttons[k].text || buttons[k].label) {
+                  Bootstrap.warn('Malformed jQuery UI dialog button: @key. The button object should be inside an array.', {
+                    '@key': k
+                  });
+                  array.push(buttons[k]);
+                }
+                else {
+                  Bootstrap.unsupported('button', k, buttons[k]);
+                }
+              }
+              buttons = array;
+            }
+
             if (buttons.length) {
               var $buttons = $('<div class="modal-buttons"/>').appendTo(this.$footer);
               for (var i = 0, l = buttons.length; i < l; i++) {
                 var button = buttons[i];
+
                 var $button = $(Drupal.theme('bootstrapModalDialogButton', button));
                 if (typeof button.click === 'function') {
-                  $button.on('click', button.click);
+                  // Bind the click to the modal element.
+                  $button.on('click', button.click.bind(this.$element));
                 }
                 $buttons.append($button);
               }
@@ -249,6 +280,11 @@
               delete options.dialogClass;
             }
 
+            // Add jQuery UI classes to elements in case developers target them
+            // in callbacks.
+            for (var k in classesMap) {
+              this.$element.find('.' + classesMap[k]).addClass(k);
+            }
 
             // Bind events.
             var events = [
@@ -263,6 +299,12 @@
               var event = events[i].toLowerCase();
               if (options[event] === void 0 || typeof options[event] !== 'function') continue;
               this.$element.on('dialog' + event, options[event]);
+            }
+
+            // Support title attribute on the modal.
+            var title;
+            if ((options.title === null || options.title === void 0) && (title = this.$element.attr('title'))) {
+              options.title = title;
             }
 
             // Handle the reset of the options.
@@ -464,8 +506,14 @@
           icon = '<span' + iconAttributes + '></span>';
         }
 
-        // Value.
-        var value = button.text;
+        // Label. Note: jQuery UI dialog has an inconsistency where it uses
+        // "text" instead of "label", so both need to be supported.
+        var value = button.label || button.text;
+
+        // Show/hide label.
+        if (icon && ((button.showLabel !== void 0 && !button.showLabel) || (button.text !== void 0 && !button.text))) {
+          value = '<span' + Attributes.create().addClass('sr-only') + '>' + value + '</span>';
+        }
         attributes.set('value', iconPosition === 'before' ? icon + value : value + icon);
 
         // Handle disabled.
@@ -476,6 +524,9 @@
         }
         if (button['class']) {
           attributes.addClass(button['class']);
+        }
+        if (button.primary) {
+          attributes.addClass('btn-primary');
         }
 
         return Drupal.theme('button', attributes);

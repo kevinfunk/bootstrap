@@ -425,12 +425,24 @@
    *   The value of the unsupported object.
    */
   Bootstrap.unsupported = function (type, name, value) {
+    Bootstrap.warn('Unsupported by Drupal Bootstrap: (@type) @name -> @value', {
+      '@type': type,
+      '@name': name,
+      '@value': typeof value === 'object' ? JSON.stringify(value) : value
+    });
+  };
+
+  /**
+   * Provide a helper method to display a warning.
+   *
+   * @param {String} message
+   *   The message to display.
+   * @param {Object} [args]
+   *   Arguments to use as replacements in Drupal.formatString.
+   */
+  Bootstrap.warn = function (message, args) {
     if (this.settings.dev && console.warn) {
-      console.warn(Drupal.formatString('Unsupported Drupal Bootstrap Modal @type: @name -> @value', {
-        '@type': type,
-        '@name': name,
-        '@value': typeof value === 'object' ? JSON.stringify(value) : value
-      }));
+      console.warn(Drupal.formatString(message, args));
     }
   };
 

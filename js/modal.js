@@ -91,6 +91,11 @@
           var data    = $this.data('bs.modal');
           var initialize = false;
 
+          // Immediately return if there's no instance to invoke a valid method.
+          if (!data && method && method !== 'open') {
+            return;
+          }
+
           options = $.extend({}, Modal.DEFAULTS, data && data.options, $this.data(), options);
           if (!data) {
             // When initializing the Bootstrap Modal, only pass the "supported"
