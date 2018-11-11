@@ -176,6 +176,9 @@
                 $buttons.append($button);
               }
             }
+
+            // Toggle footer visibility based on whether it has child elements.
+            this.$footer[this.$footer.children()[0] ? 'show' : 'hide']();
           },
 
           /**
@@ -194,14 +197,6 @@
             // This is necessary in case dialog.ajax.js decides to add buttons.
             if (!this.$footer[0]) {
               this.$footer = $(Drupal.theme('bootstrapModalFooter', {}, true)).insertAfter(this.$dialogBody);
-            }
-
-            // Create buttons.
-            this.createButtons();
-
-            // Hide the footer if there are no children.
-            if (!this.$footer.children()[0]) {
-              this.$footer.hide();
             }
 
             // Now call the parent init method.
@@ -257,6 +252,16 @@
                 if (value) {
                   dialogOptions[prop] = value;
                   styles[prop] = value;
+
+                  // If there's a defined height of some kind, enforce the modal
+                  // to use flex (on modern browsers). This will ensure that
+                  // the core autoResize calculations don't cause the content
+                  // to overflow.
+                  if (options.autoResize && (prop === 'height' || prop === 'maxHeight')) {
+                    styles.display = 'flex';
+                    styles.flexDirection = 'column';
+                    this.$dialogBody.css('overflow', 'scroll');
+                  }
                 }
               }
             }
@@ -451,6 +456,9 @@
 
             // Merge in the cloned mapped options.
             $.extend(true, this.options, this.mapDialogOptions(clone.options));
+
+            // Update buttons.
+            this.createButtons();
           },
 
           position: function(position) {
