@@ -41,14 +41,20 @@
     var buttons = [];
     var $buttons = $dialog.find('.form-actions').find('button, input[type=submit], .form-actions a.button');
     $buttons.each(function () {
-      var $originalButton = $(this).css({
-        display: 'block',
-        width: 0,
-        height: 0,
-        padding: 0,
-        border: 0,
-        overflow: 'hidden'
-      });
+      var $originalButton = $(this)
+        // Prevent original button from being tabbed to.
+        .attr('tabindex', -1)
+        // Visually make the original button invisible, but don't actually hide
+        // or remove it from the DOM because the click needs to be proxied from
+        // the faux button created in the footer to its original counterpart.
+        .css({
+          display: 'block',
+          width: 0,
+          height: 0,
+          padding: 0,
+          border: 0,
+          overflow: 'hidden'
+        });
 
       buttons.push({
         // Strip all HTML from the actual text value. This value is escaped.
