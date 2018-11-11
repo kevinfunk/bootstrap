@@ -2,25 +2,34 @@
  * @file
  * dialog.ajax.js
  */
-(function ($, Drupal) {
+(function ($, Drupal, Bootstrap) {
 
-  var dialogAjaxCurrentButton;
-  var dialogAjaxOriginalButton;
+  Drupal.behaviors.dialog.ajaxCurrentButton = null;
+  Drupal.behaviors.dialog.ajaxOriginalButton = null;
+
+  /**
+   * Synchronizes a faux button with its original counterpart.
+   *
+   * @param {Boolean} [reset = false]
+   *   Whether to reset the current and original buttons after synchronizing.
+   */
+  Drupal.behaviors.dialog.ajaxUpdateButtons = function (reset) {
+    if (this.ajaxCurrentButton && this.ajaxOriginalButton) {
+      this.ajaxCurrentButton.html(this.ajaxOriginalButton.html());
+      this.ajaxCurrentButton.prop('disabled', this.ajaxOriginalButton.prop('disabled'));
+    }
+    if (reset) {
+      this.ajaxCurrentButton = null;
+      this.ajaxOriginalButton = null;
+    }
+  };
 
   $(document)
     .ajaxSend(function () {
-      if (dialogAjaxCurrentButton && dialogAjaxOriginalButton) {
-        dialogAjaxCurrentButton.html(dialogAjaxOriginalButton.html());
-        dialogAjaxCurrentButton.prop('disabled', dialogAjaxOriginalButton.prop('disabled'));
-      }
+      Drupal.behaviors.dialog.ajaxUpdateButtons();
     })
     .ajaxComplete(function () {
-      if (dialogAjaxCurrentButton && dialogAjaxOriginalButton) {
-        dialogAjaxCurrentButton.html(dialogAjaxOriginalButton.html());
-        dialogAjaxCurrentButton.prop('disabled', dialogAjaxOriginalButton.prop('disabled'));
-      }
-      dialogAjaxCurrentButton = null;
-      dialogAjaxOriginalButton = null;
+      Drupal.behaviors.dialog.ajaxUpdateButtons(true);
     })
   ;
 
@@ -28,6 +37,7 @@
    * {@inheritdoc}
    */
   Drupal.behaviors.dialog.prepareDialogButtons = function prepareDialogButtons($dialog) {
+    var _that = this;
     var buttons = [];
     var $buttons = $dialog.find('.form-actions').find('button, input[type=submit], .form-actions a.button');
     $buttons.each(function () {
@@ -39,23 +49,28 @@
         border: 0,
         overflow: 'hidden'
       });
-      var classes = $originalButton.attr('class').replace('use-ajax-submit', '');
+
       buttons.push({
-        text: $originalButton.html() || $originalButton.attr('value'),
-        class: classes,
+        // Strip all HTML from the actual text value. This value is escaped.
+        // It actual HTML value will be synced with the original button's HTML
+        // below in the "create" method.
+        text: Bootstrap.stripHtml($originalButton),
+        class: $originalButton.attr('class').replace('use-ajax-submit', ''),
         click: function click(e) {
-          dialogAjaxCurrentButton = $(e.target);
-          dialogAjaxOriginalButton = $originalButton;
-          if ($originalButton.is('a')) {
-            $originalButton[0].click();
-          }
-          else {
-            $originalButton.trigger('mousedown').trigger('mouseup').trigger('click');
-            e.preventDefault();
-          }
+          e.preventDefault();
+          e.stopPropagation();
+          _that.ajaxCurrentButton = $(e.target);
+          _that.ajaxOriginalButton = $originalButton;
+          Bootstrap.simulate($originalButton, 'click');
+        },
+        create: function () {
+          _that.ajaxCurrentButton = $(this);
+          _that.ajaxOriginalButton = $originalButton;
+          _that.ajaxUpdateButtons(true);
         }
       });
     });
+
     return buttons;
   };
 

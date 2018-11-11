@@ -353,14 +353,17 @@
   /**
    * Simulates a native event on an element in the browser.
    *
-   * Note: This is a pretty complete modern implementation. If things are quite
-   * working the way you intend (in older browsers), you may wish to use the
-   * jQuery.simulate plugin. If it's available, this method will defer to it.
+   * Note: This is a fairly complete modern implementation. If things aren't
+   * working quite the way you intend (in older browsers), you may wish to use
+   * the jQuery.simulate plugin. If it's available, this method will defer to
+   * that plugin.
    *
    * @see https://github.com/jquery/jquery-simulate
    *
-   * @param {HTMLElement} element
-   *   A DOM element to dispatch event on.
+   * @param {HTMLElement|jQuery} element
+   *   A DOM element to dispatch event on. Note: this may be a jQuery object,
+   *   however be aware that this will trigger the same event for each element
+   *   inside the jQuery collection; use with caution.
    * @param {String} type
    *   The type of event to simulate.
    * @param {Object} [options]
@@ -368,13 +371,36 @@
    *   an event is being proxied, you should just pass the original event
    *   object here. This allows, if the browser supports it, to be a truly
    *   simulated event.
+   *
+   * @return {Boolean}
+   *   The return value is false if event is cancelable and at least one of the
+   *   event handlers which handled this event called Event.preventDefault().
+   *   Otherwise it returns true.
    */
   Bootstrap.simulate = function (element, type, options) {
+    // Handle jQuery object wrappers so it triggers on each element.
+    if (element instanceof $) {
+      var ret = true;
+      element.each(function () {
+        if (!Bootstrap.simulate(this, type, options)) {
+          ret = false;
+        }
+      });
+      return ret;
+    }
+
+    if (!(element instanceof HTMLElement)) {
+      this.fatal('Passed element must be an instance of HTMLElement, got "@type" instead.', {
+        '@type': typeof element,
+      });
+    }
+
     // Defer to the jQuery.simulate plugin, if it's available.
     if (typeof $.simulate === 'function') {
       new $.simulate(element, type, options);
-      return;
+      return true;
     }
+
     var event;
     var ctor;
     for (var name in this.eventMap) {
@@ -398,20 +424,44 @@
     }
     if (typeof window[ctor] === 'function') {
       event = new window[ctor](type, opts);
-      element.dispatchEvent(event);
+      return element.dispatchEvent(event);
     }
     else if (document.createEvent) {
       event = document.createEvent(ctor);
       event.initEvent(type, opts.bubbles, opts.cancelable);
-      element.dispatchEvent(event);
+      return element.dispatchEvent(event);
     }
     else if (typeof element.fireEvent === 'function') {
       event = $.extend(document.createEventObject(), opts);
-      element.fireEvent('on' + type, event);
+      return element.fireEvent('on' + type, event);
     }
     else if (typeof element[type]) {
       element[type]();
+      return true;
     }
+  };
+
+  /**
+   * Strips HTML and returns just text.
+   *
+   * @param {String|Element|jQuery} html
+   *   A string of HTML content, an Element DOM object or a jQuery object.
+   *
+   * @return {String}
+   *   The text without HTML tags.
+   *
+   * @todo Replace with http://locutus.io/php/strings/strip_tags/
+   */
+  Bootstrap.stripHtml = function (html) {
+    if (html instanceof $) {
+      html = html.html();
+    }
+    else if (html instanceof Element) {
+      html = html.innerHTML;
+    }
+    var tmp = document.createElement('DIV');
+    tmp.innerHTML = html;
+    return (tmp.textContent || tmp.innerText || '').replace(/^[\s\n\t]*|[\s\n\t]*$/g, '');
   };
 
   /**

@@ -161,12 +161,18 @@
               var $buttons = $('<div class="modal-buttons"/>').appendTo(this.$footer);
               for (var i = 0, l = buttons.length; i < l; i++) {
                 var button = buttons[i];
-
                 var $button = $(Drupal.theme('bootstrapModalDialogButton', button));
+
+                // Invoke the "create" method for jQuery UI buttons.
+                if (typeof button.create === 'function') {
+                  button.create.call($button[0]);
+                }
+
+                // Bind the "click" method for jQuery UI buttons to the modal.
                 if (typeof button.click === 'function') {
-                  // Bind the click to the modal element.
                   $button.on('click', button.click.bind(this.$element));
                 }
+
                 $buttons.append($button);
               }
             }
@@ -499,7 +505,14 @@
         var icon = '';
         var iconPosition = button.iconPosition || 'beginning';
         iconPosition = (iconPosition === 'end' && !rtl) || (iconPosition === 'beginning' && rtl) ? 'after' : 'before';
-        if (button.icon) {
+
+        // Handle Bootstrap icons differently.
+        if (button.bootstrapIcon) {
+          icon = Drupal.theme('icon', 'bootstrap', button.icon);
+        }
+        // Otherwise, assume it's a jQuery UI icon.
+        // @todo Map jQuery UI icons to Bootstrap icons?
+        else if (button.icon) {
           var iconAttributes = Attributes.create()
             .addClass(['ui-icon', button.icon])
             .set('aria-hidden', 'true');
