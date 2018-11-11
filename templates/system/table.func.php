@@ -81,7 +81,7 @@ function bootstrap_table(array $variables) {
   $responsive = $variables['responsive'];
 
   // Add sticky headers, if applicable.
-  if (count($header) && $sticky) {
+  if (is_array($header) && count($header) && $sticky) {
     drupal_add_js('misc/tableheader.js');
     // Add 'sticky-enabled' class to the table to identify it for JS.
     // This is needed to target tables constructed by this function.
