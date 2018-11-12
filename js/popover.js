@@ -8,6 +8,8 @@ var Drupal = Drupal || {};
 (function ($, Drupal, Bootstrap) {
   "use strict";
 
+  var $document = $(document);
+
   /**
    * Extend the Bootstrap Popover plugin constructor class.
    */
@@ -44,7 +46,7 @@ var Drupal = Drupal || {};
 
       var _this = this;
 
-      $(document)
+      $document
         .on('show.bs.popover', '[data-toggle=popover]', function () {
           var $trigger = $(this);
           var popover = $trigger.data('bs.popover');
@@ -93,7 +95,8 @@ var Drupal = Drupal || {};
         }
 
         // Retrieve content from a target element.
-        var $target = $(options.target || $element.is('a[href^="#"]') && $element.attr('href')).clone();
+        var target = options.target || $element.is('a[href^="#"]') && $element.attr('href');
+        var $target = $document.find(target).clone();
         if (!options.content && $target[0]) {
           $target.removeClass('visually-hidden hidden').removeAttr('aria-hidden');
           options.content = $target.wrap('<div/>').parent()[options.html ? 'html' : 'text']() || '';
