@@ -77,10 +77,9 @@ class BootstrapDropdown extends PreprocessBase implements PreprocessInterface {
             $wrapper_attributes['hreflang'] = $element['language']->getId();
 
             // Ensure the Url language is set on the object itself.
-            // @todo Possibly a core bug?
-            if (empty($element['url']->getOption('language'))) {
-              $element['url']->setOption('language', $element['language']);
-            }
+            // @todo Revisit, possibly a core bug?
+            // @see https://www.drupal.org/project/bootstrap/issues/2868100
+            $element['url']->setOption('language', $element['language']);
           }
 
           // Preserve query parameters (if any)
