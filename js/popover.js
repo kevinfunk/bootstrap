@@ -59,7 +59,14 @@ var Drupal = Drupal || {};
             _this.$activePopover = $trigger;
           }
         })
-        .on('focus.bs.popover', ':focusable', function (e) {
+        // Unfortunately, :focusable is only made available when using jQuery
+        // UI. While this would be the most semantic pseudo selector to use
+        // here, jQuery UI may not always be loaded. Instead, just use :visible
+        // here as this just needs some sort of selector here. This activates
+        // delegate binding to elements in jQuery so it can work it's bubbling
+        // focus magic since elements don't really propagate their focus events.
+        // @see https://www.drupal.org/project/bootstrap/issues/3013236
+        .on('focus.bs.popover', ':visible', function (e) {
           var $target = $(e.target);
           if (_this.$activePopover && _this.getOption('autoClose') && !_this.$activePopover.is($target) && !$target.closest('.popover.in')[0]) {
             _this.$activePopover.popover('hide');
