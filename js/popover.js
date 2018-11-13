@@ -141,7 +141,7 @@ var Drupal = Drupal || {};
     },
     getOption: function(name, defaultValue, element) {
       var $element = element ? $(element) : this.$activePopover;
-      var options = $.extend(true, {}, $.fn.popover.Constructor.DEFAULTS, (($element && $element.data('bs.popover')).options || {}).options);
+      var options = $.extend(true, {}, $.fn.popover.Constructor.DEFAULTS, ($element && $element.data('bs.popover') || {}).options);
       if (options[name] !== void 0) {
         return options[name];
       }
