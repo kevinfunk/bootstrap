@@ -118,8 +118,11 @@
         // Extract the arguments.
         var args = Array.prototype.slice.call(arguments);
         var method = args.shift();
-        var options = {};
+        var options = args.shift() || {};
+        var relatedTarget = args.shift() || null;
+        // Move arguments down if no method was passed.
         if ($.isPlainObject(method)) {
+          relatedTarget = options || null;
           options = method;
           method = null;
         }
@@ -144,17 +147,12 @@
             initialize = true;
           }
 
-          // If no method or arguments, treat it like it's initializing the modal.
-          if (!method && !args.length) {
-            data.option(options);
-            initialize = true;
-          }
-
           // Initialize the modal.
-          if (initialize) {
+          if (initialize || (!method && !args.length)) {
             data.init();
           }
 
+          // Explicit method passed.
           if (method) {
             if (typeof data[method] === 'function') {
               try {
@@ -166,6 +164,16 @@
             }
             else {
               Bootstrap.unsupported('method', method);
+            }
+          }
+          else {
+            // If no method or arguments, set options.
+            if (!args.length) {
+              data.option(options);
+            }
+            // Handle native modal showing.
+            if (!options.jQueryUiBridge && options.show && !data.isShown) {
+              data.show(relatedTarget);
             }
           }
         });
@@ -188,7 +196,7 @@
           var href    = $this.attr('href');
           var target  = $this.attr('data-target') || (href && href.replace(/.*(?=#[^\s]+$)/, '')); // strip for ie7
           var $target = $document.find(target);
-          var option  = $target.data('bs.modal') ? 'toggle' : $.extend({ remote: !/#/.test(href) && href }, $target.data(), $this.data());
+          var options  = $target.data('bs.modal') ? 'toggle' : $.extend({ remote: !/#/.test(href) && href }, $target.data(), $this.data());
 
           if ($this.is('a')) e.preventDefault();
 
@@ -199,7 +207,7 @@
               $this.is(':visible') && $this.trigger('focus');
             });
           });
-          $target.modal(option, this);
+          $target.modal(options, this);
         });
 
       return Plugin;
