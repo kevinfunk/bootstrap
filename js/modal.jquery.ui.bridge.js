@@ -355,7 +355,6 @@
                 case 'closeOnEscape':
                   dialogOptions.closeOnEscape = options.closeOnEscape;
                   mappedOptions.keyboard = !!options.closeOnEscape;
-                  this.$close[options.closeOnEscape ? 'show' : 'hide']();
                   if (!options.closeOnEscape && options.modal) {
                     mappedOptions.backdrop = options.modal = 'static';
                   }
