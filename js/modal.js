@@ -66,7 +66,6 @@
 
       // Override the Modal constructor.
       var Modal = function (element, options) {
-        this.options             = options;
         this.$body               = $(document.body);
         this.$element            = $(element);
         this.$dialog             = this.$element.find('.modal-dialog');
@@ -80,6 +79,7 @@
         this.originalBodyPad     = null;
         this.scrollbarWidth      = 0;
         this.ignoreBackdropClick = false;
+        this.options             = this.mapDialogOptions(options);
       };
 
       // Extend defaults to take into account for theme settings.
@@ -89,6 +89,7 @@
         focusInput: !!settings.modal_focus_input,
         selectText: !!settings.modal_select_text,
         keyboard: !!settings.modal_keyboard,
+        remote: null,
         show: !!settings.modal_show,
         size: settings.modal_size
       });
@@ -120,9 +121,9 @@
       var Plugin = function () {
         // Extract the arguments.
         var args = Array.prototype.slice.call(arguments);
-        var method = args.shift();
-        var options = args.shift() || {};
-        var relatedTarget = args.shift() || null;
+        var method = args[0];
+        var options = args[1] || {};
+        var relatedTarget = args[2] || null;
         // Move arguments down if no method was passed.
         if ($.isPlainObject(method)) {
           relatedTarget = options || null;
@@ -140,13 +141,10 @@
             return;
           }
 
-          options = $.extend({}, Modal.DEFAULTS, data && data.options, $this.data(), options);
+          options = Bootstrap.normalizeObject($.extend({}, Modal.DEFAULTS, data && data.options, $this.data(), options));
+
           if (!data) {
-            // When initializing the Bootstrap Modal, only pass the "supported"
-            // options by intersecting the default options. This allows plugins
-            // like the jQuery UI bridge to properly detect when options have
-            // changed when they're set below as a global "option" method.
-            $this.data('bs.modal', (data = new Modal(this, Bootstrap.intersectObjects(options, Modal.DEFAULTS))));
+            $this.data('bs.modal', (data = new Modal(this, options)));
             initialize = true;
           }
 
@@ -159,7 +157,7 @@
           if (method) {
             if (typeof data[method] === 'function') {
               try {
-                ret = data[method].apply(data, args);
+                ret = data[method].apply(data, args.slice(1));
               }
               catch (e) {
                 Drupal.throwError(e);
@@ -170,10 +168,9 @@
             }
           }
           else {
-            // If no method or arguments, set options.
-            if (!args.length) {
-              data.option(options);
-            }
+            // If no method set the options.
+            data.option(options);
+
             // Handle native modal showing.
             if (!options.jQueryUiBridge && options.show && !data.isShown) {
               data.show(relatedTarget);

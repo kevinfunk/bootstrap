@@ -78,7 +78,10 @@
         });
 
         // Indicate that the modal is a jQuery UI dialog bridge.
-        options.jQueryUiBridge = true;
+        options = {
+          dialogOptions: options,
+          jQueryUiBridge: true
+        };
 
         // Proxy just the options to the Bootstrap Modal plugin.
         return $.fn.modal.apply(this, [options]);
@@ -234,8 +237,22 @@
            *   The options to map.
            */
           mapDialogOptions: function (options) {
-            var dialogOptions = {};
             var mappedOptions = {};
+            var dialogOptions = options.dialogOptions || {};
+
+            // Remove any existing dialog options.
+            delete options.dialogOptions;
+
+            // Separate Bootstrap modal options from jQuery UI dialog options.
+            for (var k in options) {
+              if (Modal.DEFAULTS.hasOwnProperty(k)) {
+                mappedOptions[k] = options[k];
+              }
+              else {
+                dialogOptions[k] = options[k];
+              }
+            }
+
 
             // Handle CSS properties.
             var cssUnitRegExp = /^([+-]?(?:\d+|\d*\.\d+))([a-z]*|%)?$/;
@@ -247,17 +264,16 @@
             var cssProperties = ['height', 'maxHeight', 'maxWidth', 'minHeight', 'minWidth', 'width'];
             for (var i = 0, l = cssProperties.length; i < l; i++) {
               var prop = cssProperties[i];
-              if (options[prop] !== void 0) {
-                var value = parseCssUnit(options[prop]);
+              if (dialogOptions[prop] !== void 0) {
+                var value = parseCssUnit(dialogOptions[prop]);
                 if (value) {
-                  dialogOptions[prop] = value;
                   styles[prop] = value;
 
                   // If there's a defined height of some kind, enforce the modal
                   // to use flex (on modern browsers). This will ensure that
                   // the core autoResize calculations don't cause the content
                   // to overflow.
-                  if (options.autoResize && (prop === 'height' || prop === 'maxHeight')) {
+                  if (dialogOptions.autoResize && (prop === 'height' || prop === 'maxHeight')) {
                     styles.display = 'flex';
                     styles.flexDirection = 'column';
                     this.$dialogBody.css('overflow', 'scroll');
@@ -278,22 +294,22 @@
               'ui-dialog-content': 'modal-body',
               'ui-dialog-buttonpane': 'modal-footer'
             };
-            if (options.dialogClass) {
-              if (options.classes === void 0) {
-                options.classes = {};
+            if (dialogOptions.dialogClass) {
+              if (dialogOptions.classes === void 0) {
+                dialogOptions.classes = {};
               }
-              if (options.classes['ui-dialog'] === void 0) {
-                options.classes['ui-dialog'] = '';
+              if (dialogOptions.classes['ui-dialog'] === void 0) {
+                dialogOptions.classes['ui-dialog'] = '';
               }
-              var dialogClass = options.classes['ui-dialog'].split(' ');
-              dialogClass.push(options.dialogClass);
-              options.classes['ui-dialog'] = dialogClass.join(' ');
-              delete options.dialogClass;
+              var dialogClass = dialogOptions.classes['ui-dialog'].split(' ');
+              dialogClass.push(dialogOptions.dialogClass);
+              dialogOptions.classes['ui-dialog'] = dialogClass.join(' ');
+              delete dialogOptions.dialogClass;
             }
 
             // Add jQuery UI classes to elements in case developers target them
             // in callbacks.
-            for (var k in classesMap) {
+            for (k in classesMap) {
               this.$element.find('.' + classesMap[k]).addClass(k);
             }
 
@@ -308,64 +324,54 @@
             ];
             for (i = 0, l = events.length; i < l; i++) {
               var event = events[i].toLowerCase();
-              if (options[event] === void 0 || typeof options[event] !== 'function') continue;
-              this.$element.on('dialog' + event, options[event]);
+              if (dialogOptions[event] === void 0 || typeof dialogOptions[event] !== 'function') continue;
+              this.$element.on('dialog' + event, dialogOptions[event]);
             }
 
             // Support title attribute on the modal.
             var title;
-            if ((options.title === null || options.title === void 0) && (title = this.$element.attr('title'))) {
-              options.title = title;
+            if ((dialogOptions.title === null || dialogOptions.title === void 0) && (title = this.$element.attr('title'))) {
+              dialogOptions.title = title;
             }
 
             // Handle the reset of the options.
-            for (var name in options) {
-              if (!options.hasOwnProperty(name) || options[name] === void 0) continue;
+            for (var name in dialogOptions) {
+              if (!dialogOptions.hasOwnProperty(name) || dialogOptions[name] === void 0) continue;
 
               switch (name) {
                 case 'appendTo':
-                  Bootstrap.unsupported('option', name, options.appendTo);
+                  Bootstrap.unsupported('option', name, dialogOptions.appendTo);
                   break;
 
                 case 'autoOpen':
-                  mappedOptions.show = !!options.autoOpen;
-                  break;
-
-                // This is really a drupal.dialog option, not jQuery UI.
-                case 'autoResize':
-                  dialogOptions.autoResize = !!options.autoResize;
-                  break;
-
-                case 'buttons':
-                  dialogOptions.buttons = options.buttons;
+                  mappedOptions.show = dialogOptions.show = !!dialogOptions.autoOpen;
                   break;
 
                 case 'classes':
-                  dialogOptions.classes = options.classes;
-                  for (var key in options.classes) {
-                    if (options.classes.hasOwnProperty(key) && classesMap[key] !== void 0) {
-                      // Run through Attributes to sanitize classes.
-                      var attributes = Attributes.create().addClass(options.classes[key]).toPlainObject();
-                      var selector = '.' + classesMap[key];
-                      this.$element.find(selector).addClass(attributes['class']);
+                  if (dialogOptions.classes) {
+                    for (var key in dialogOptions.classes) {
+                      if (dialogOptions.classes.hasOwnProperty(key) && classesMap[key] !== void 0) {
+                        // Run through Attributes to sanitize classes.
+                        var attributes = Attributes.create().addClass(dialogOptions.classes[key]).toPlainObject();
+                        var selector = '.' + classesMap[key];
+                        this.$element.find(selector).addClass(attributes['class']);
+                      }
                     }
                   }
                   break;
 
                 case 'closeOnEscape':
-                  dialogOptions.closeOnEscape = options.closeOnEscape;
-                  mappedOptions.keyboard = !!options.closeOnEscape;
-                  if (!options.closeOnEscape && options.modal) {
-                    mappedOptions.backdrop = options.modal = 'static';
+                  mappedOptions.keyboard = !!dialogOptions.closeOnEscape;
+                  if (!dialogOptions.closeOnEscape && dialogOptions.modal) {
+                    mappedOptions.backdrop = 'static';
                   }
                   break;
 
                 case 'closeText':
-                  Bootstrap.unsupported('option', name, options.closeText);
+                  Bootstrap.unsupported('option', name, dialogOptions.closeText);
                   break;
 
                 case 'draggable':
-                  dialogOptions.draggable = options.draggable;
                   this.$content
                     .draggable({
                       handle: '.modal-header',
@@ -373,59 +379,60 @@
                       start: relayEvent(this.$element, 'dialogdragstart'),
                       end: relayEvent(this.$element, 'dialogdragend')
                     })
-                    .draggable(options.draggable ? 'enable' : 'disable');
+                    .draggable(dialogOptions.draggable ? 'enable' : 'disable');
                   break;
 
                 case 'hide':
-                  if (options.hide === false || options.hide === true) {
-                    this.$element[options.hide ? 'addClass' : 'removeClass']('fade');
-                    mappedOptions.animation = options.hide;
+                  if (dialogOptions.hide === false || dialogOptions.hide === true) {
+                    this.$element[dialogOptions.hide ? 'addClass' : 'removeClass']('fade');
+                    mappedOptions.animation = dialogOptions.hide;
                   }
                   else {
-                    Bootstrap.unsupported('option', name + ' (complex animation)', options.hide);
+                    Bootstrap.unsupported('option', name + ' (complex animation)', dialogOptions.hide);
                   }
                   break;
 
                 case 'modal':
-                  mappedOptions.backdrop = options.modal;
-                  dialogOptions.modal = !!options.modal;
+                  if (!dialogOptions.closeOnEscape && dialogOptions.modal) {
+                    mappedOptions.backdrop = 'static';
+                  }
+                  else {
+                    mappedOptions.backdrop = dialogOptions.modal;
+                  }
 
                   // If not a modal and no initial position, center it.
-                  if (!options.modal && !options.position) {
+                  if (!dialogOptions.modal && !dialogOptions.position) {
                     this.position({ my: 'center', of: window });
                   }
                   break;
 
                 case 'position':
-                  dialogOptions.position = options.position;
-                  this.position(options.position);
+                  this.position(dialogOptions.position);
                   break;
 
                 // Resizable support (must initialize first).
                 case 'resizable':
-                  dialogOptions.resizeable = options.resizable;
                   this.$content
                     .resizable({
                       resize: relayEvent(this.$element, 'dialogresize'),
                       start: relayEvent(this.$element, 'dialogresizestart'),
                       end: relayEvent(this.$element, 'dialogresizeend')
                     })
-                    .resizable(options.resizable ? 'enable' : 'disable');
+                    .resizable(dialogOptions.resizable ? 'enable' : 'disable');
                   break;
 
                 case 'show':
-                  if (options.show === false || options.show === true) {
-                    this.$element[options.show ? 'addClass' : 'removeClass']('fade');
-                    mappedOptions.animation = options.show;
+                  if (dialogOptions.show === false || dialogOptions.show === true) {
+                    this.$element[dialogOptions.show ? 'addClass' : 'removeClass']('fade');
+                    mappedOptions.animation = dialogOptions.show;
                   }
                   else {
-                    Bootstrap.unsupported('option', name + ' (complex animation)', options.show);
+                    Bootstrap.unsupported('option', name + ' (complex animation)', dialogOptions.show);
                   }
                   break;
 
                 case 'title':
-                  dialogOptions.title = options.title;
-                  this.$dialog.find('.modal-title').text(options.title);
+                  this.$dialog.find('.modal-title').text(dialogOptions.title);
                   break;
 
               }
@@ -448,7 +455,7 @@
            * Handler for $.fn.dialog('option').
            */
           option: function () {
-            var clone = {options: $.extend({}, this.options)};
+            var clone = {options: {}};
 
             // Apply the parent option method to the clone of current options.
             this.super.apply(clone, arguments);

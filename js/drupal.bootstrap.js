@@ -182,6 +182,40 @@
   };
 
   /**
+   * Normalizes an object's values.
+   *
+   * @param {Object} obj
+   *   The object to normalize.
+   *
+   * @return {Object}
+   *   The normalized object.
+   */
+  Bootstrap.normalizeObject = function (obj) {
+    if (!$.isPlainObject(obj)) {
+      return obj;
+    }
+
+    for (var k in obj) {
+      if (typeof obj[k] === 'string') {
+        if (obj[k] === 'true') {
+          obj[k] = true;
+        }
+        else if (obj[k] === 'false') {
+          obj[k] = false;
+        }
+        else if (obj[k].match(/^[\d-.]$/)) {
+          obj[k] = parseFloat(obj[k]);
+        }
+      }
+      else if ($.isPlainObject(obj[k])) {
+        obj[k] = Bootstrap.normalizeObject(obj[k]);
+      }
+    }
+
+    return obj;
+  };
+
+  /**
    * An object based once plugin (similar to jquery.once, but without the DOM).
    *
    * @param {String} id
@@ -428,7 +462,7 @@
     }
     var tmp = document.createElement('DIV');
     tmp.innerHTML = html;
-    return (tmp.textContent || tmp.innerText || '').replace(/^[\s\n\t]*|[\s\n\t]*$/g, '');
+    return (tmp.textContent || tmp.innerText || '').replace(/^[\s\n\t]*|[\s\n\t]*$/, '');
   };
 
   /**
