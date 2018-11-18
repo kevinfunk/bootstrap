@@ -27,7 +27,7 @@
    *   be used.
    */
   Bootstrap.modalFindFocusableElement = function (modal) {
-    return modal.$dialogBody.find(':input,:button,.btn');
+    return modal.$dialogBody.find(':input,:button,.btn').not('.visually-hidden,.sr-only');
   };
 
   $document.on('shown.bs.modal', function (e) {
@@ -44,6 +44,9 @@
         if (modal.options.selectText && $input.is(':text')) {
           $input[0].setSelectionRange(0, $input[0].value.length)
         }
+      }
+      else if (modal.$close.is(':visible')) {
+        modal.$close.focus();
       }
     }
   });
