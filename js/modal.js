@@ -117,6 +117,18 @@
         }
       };
 
+      /**
+       * Map dialog options.
+       *
+       * Note: this is primarily for use in modal.jquery.ui.bridge.js.
+       *
+       * @param {Object} options
+       *   The passed options.
+       */
+      Modal.prototype.mapDialogOptions = function (options) {
+        return options || {};
+      }
+
       // Modal jQuery Plugin Definition.
       var Plugin = function () {
         // Extract the arguments.
