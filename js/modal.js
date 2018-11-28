@@ -149,7 +149,8 @@
           var initialize = false;
 
           // Immediately return if there's no instance to invoke a valid method.
-          if (!data && method && method !== 'open') {
+          var showMethods = ['open', 'show', 'toggle'];
+          if (!data && method && showMethods.indexOf(method) === -1) {
             return;
           }
 
