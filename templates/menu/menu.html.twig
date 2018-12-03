@@ -27,20 +27,23 @@
       {%
         set item_classes = [
           item.is_expanded and item.below ? 'expanded dropdown',
-          item.in_active_trail ? 'active-trail',
+          item.in_active_trail ? 'active active-trail',
           loop.first ? 'first',
           loop.last ? 'last',
         ]
       %}
       <li{{ item.attributes.addClass(item_classes) }}>
-      {% if menu_level == 0 and item.is_expanded and item.below %}
-        <a{{ item.link_attributes.addClass(['dropdown-toggle', item.in_active_trail ? 'active-trail']) | without('data-toggle') }} href="{{ item.url }}" data-toggle="dropdown">{{ item.title }}<span class="caret"></span></a>
-      {% else %}
-        <a{{ item.link_attributes.addClass(item.in_active_trail ? 'active-trail') }} href="{{ item.url }}">{{ item.title }}</a>
-      {% endif %}
-      {% if item.below %}
-        {{ _self.menu_links(item.below, attributes.removeClass(classes), menu_level + 1, classes) }}
-      {% endif %}
+        {% set link_title = item.title %}
+        {% set link_attributes = item.link_attributes %}
+        {% if menu_level == 0 and item.is_expanded and item.below %}
+          {% set link_title %}{{ link_title }} <span class="caret"></span>{% endset %}
+          {% set link_attributes = link_attributes.addClass('dropdown-toggle').setAttribute('data-toggle', 'dropdown') %}
+        {% endif %}
+        {# Must use link() here so it triggers hook_link_alter(). #}
+        {{ link(link_title, item.url, link_attributes.addClass(item.in_active_trail ? 'active-trail')) }}
+        {% if item.below %}
+          {{ _self.menu_links(item.below, attributes.removeClass(classes), menu_level + 1, classes) }}
+        {% endif %}
       </li>
     {% endfor %}
     </ul>
