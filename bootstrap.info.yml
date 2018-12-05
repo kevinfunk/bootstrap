@@ -31,6 +31,8 @@ libraries-extend:
     - bootstrap/drupal.dialog.ajax
   core/drupal.form:
     - bootstrap/drupal.form
+  core/drupal.message:
+    - bootstrap/drupal.message
   core/drupal.progress:
     - bootstrap/drupal.progress
   core/drupal.states:
