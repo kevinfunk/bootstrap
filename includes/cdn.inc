@@ -16,29 +16,32 @@ define('BOOTSTRAP_CDN_PROVIDER_PATH', 'public://bootstrap/cdn_providers');
  *   The URI to retrieve JSON from.
  * @param array $options
  *   The options to pass to the HTTP client.
+ * @param \Exception|null $exception
+ *   The exception thrown if there was an error, passed by reference.
  *
- * @return array|null
- *   The requested JSON array or NULL if an error occurred.
+ * @return array
+ *   The requested JSON array.
  */
-function _bootstrap_cdn_provider_request_json($uri, array $options = []) {
-  $json = NULL;
+function _bootstrap_cdn_provider_request_json($uri, array $options = array(), &$exception = NULL) {
+  $json = array();
 
-  $options += [
+  $options += array(
     'method' => 'GET',
-    'headers' => [
+    'headers' => array(
       'User-Agent' => 'Drupal Bootstrap 7.x-3.x (https://www.drupal.org/project/bootstrap)',
-    ],
-  ];
+    ),
+  );
 
   try {
     $response = drupal_http_request($uri, $options);
     if ($response->code == 200) {
-      $json = drupal_json_decode($response->data);
+      $json = drupal_json_decode($response->data) ?: array();
     }
   }
   catch (\Exception $e) {
-    // Intentionally left blank.
+    $exception = $e;
   }
+
   return $json;
 }
 
@@ -80,12 +83,12 @@ function bootstrap_cdn_provider($provider = NULL, $reset = FALSE) {
         ),
         'jsdelivr' => array(
           'title' => t('jsDelivr'),
-          'description' => t('<p><a href="!jsdelivr" target="_blank">jsDelivr</a> is a free multi-CDN infrastructure that uses <a href="!maxcdn" target="_blank">MaxCDN</a>, <a href="!cloudflare" target="_blank">Cloudflare</a> and many others to combine their powers for the good of the open source community... <a href="!jsdelivr_about" target="_blank">read more</a></p>', [
+          'description' => t('<p><a href="!jsdelivr" target="_blank">jsDelivr</a> is a free multi-CDN infrastructure that uses <a href="!maxcdn" target="_blank">MaxCDN</a>, <a href="!cloudflare" target="_blank">Cloudflare</a> and many others to combine their powers for the good of the open source community... <a href="!jsdelivr_about" target="_blank">read more</a></p>', array(
             '!jsdelivr' => 'https://www.jsdelivr.com',
             '!jsdelivr_about' => 'https://www.jsdelivr.com/about',
             '!maxcdn' => 'https://www.maxcdn.com',
             '!cloudflare' => 'https://www.cloudflare.com',
-          ]),
+          )),
         ),
       );
 
@@ -158,12 +161,12 @@ function bootstrap_bootstrap_cdn_provider_jsdelivr_alter(array &$provider, \stdC
   $provider['versions'] = array();
   $provider['themes'] = array();
 
-  $json = [];
-  foreach (['bootstrap', 'bootswatch'] as $package) {
-    $data = ['name' => $package, 'assets' => []];
+  $json = array();
+  foreach (array('bootstrap', 'bootswatch') as $package) {
+    $data = array('name' => $package, 'assets' => array());
     $latest = '0.0.0';
-    $versions = [];
-    $packageJson = _bootstrap_cdn_provider_request_json("https://data.jsdelivr.com/v1/package/npm/$package") + ['versions' => []];
+    $versions = array();
+    $packageJson = _bootstrap_cdn_provider_request_json("https://data.jsdelivr.com/v1/package/npm/$package") + array('versions' => array());
     foreach ($packageJson['versions'] as $key => $version) {
       // Skip irrelevant versions.
       if (!preg_match('/^' . substr(BOOTSTRAP_VERSION, 0, 1) . '\.\d+\.\d+$/', $version)) {
@@ -181,7 +184,7 @@ function bootstrap_bootstrap_cdn_provider_jsdelivr_alter(array &$provider, \stdC
         $latest = $version;
       }
 
-      $asset = ['files' => [], 'version' => $version];
+      $asset = array('files' => array(), 'version' => $version);
       foreach ($versionJson['files'] as $file) {
         // Skip old bootswatch file structure.
         if ($package === 'bootswatch' && preg_match('`^/2|/bower_components`', $file['name'], $matches)) {
