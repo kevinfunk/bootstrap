@@ -171,17 +171,19 @@ class ProviderBase extends PluginBase implements ProviderInterface {
    *   The URI to retrieve JSON from.
    * @param array $options
    *   The options to pass to the HTTP client.
+   * @param \Exception|null $exception
+   *   The exception thrown if there was an error, passed by reference.
    *
-   * @return array|null
-   *   The requested JSON array or NULL if an error occurred.
+   * @return array
+   *   The requested JSON array.
    */
-  protected function requestJson($uri, array $options = []) {
-    $json = NULL;
+  protected function requestJson($uri, array $options = [], &$exception = NULL) {
+    $json = [];
 
     $options += [
       'method' => 'GET',
       'headers' => [
-        'User-Agent' => 'Drupal Bootstrap (https://www.drupal.org/project/bootstrap)',
+        'User-Agent' => 'Drupal Bootstrap 8.x-3.x (https://www.drupal.org/project/bootstrap)',
       ],
     ];
 
@@ -192,15 +194,16 @@ class ProviderBase extends PluginBase implements ProviderInterface {
       $response = $client->send($request, $options);
       if ($response->getStatusCode() == 200) {
         $contents = $response->getBody(TRUE)->getContents();
-        $json = Json::decode($contents);
+        $json = Json::decode($contents) ?: [];
       }
     }
     catch (GuzzleException $e) {
-      // Intentionally left blank.
+      $exception = $e;
     }
     catch (\Exception $e) {
-      // Intentionally left blank.
+      $exception = $e;
     }
+
     return $json;
   }
 
