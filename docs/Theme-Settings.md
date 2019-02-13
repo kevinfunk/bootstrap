@@ -96,7 +96,7 @@ flexibility if the need ever arises.
       </div>
       <pre class=" language-yaml"><code>
 cdn_custom_css:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.0/dist/css/bootstrap.css'
+'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.css'
 
 </code></pre>
     </td>
@@ -112,7 +112,7 @@ used instead if site aggregation is enabled.
       </div>
       <pre class=" language-yaml"><code>
 cdn_custom_css_min:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.0/dist/css/bootstrap.min.css'
+'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css'
 
 </code></pre>
     </td>
@@ -128,7 +128,7 @@ flexibility if the need ever arises.
       </div>
       <pre class=" language-yaml"><code>
 cdn_custom_js:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.0/dist/js/bootstrap.js'
+'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.js'
 
 </code></pre>
     </td>
@@ -144,7 +144,7 @@ used instead if site aggregation is enabled.
       </div>
       <pre class=" language-yaml"><code>
 cdn_custom_js_min:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.0/dist/js/bootstrap.min.js'
+'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js'
 
 </code></pre>
     </td>
@@ -158,7 +158,7 @@ cdn_jsdelivr_version
 Choose the Bootstrap version from jsdelivr
       </div>
       <pre class=" language-yaml"><code>
-cdn_jsdelivr_version: 3.4.0
+cdn_jsdelivr_version: 3.4.1
 
 </code></pre>
     </td>
