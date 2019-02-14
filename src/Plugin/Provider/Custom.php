@@ -17,24 +17,24 @@ class Custom extends ProviderBase {
   /**
    * {@inheritdoc}
    */
-  public function getAssets($types = NULL) {
-    $this->assets = [];
-
-    // If no type is set, return all CSS and JS.
-    if (!isset($types)) {
-      $types = ['css', 'js'];
-    }
-    $types = is_array($types) ? $types : [$types];
-
-    foreach ($types as $type) {
+  protected function discoverCdnAssets($version, $theme) {
+    $assets = [];
+    foreach (['css', 'js'] as $type) {
       if ($setting = $this->theme->getSetting('cdn_custom_' . $type)) {
-        $this->assets[$type][] = $setting;
+        $assets[$type][] = $setting;
       }
       if ($setting = $this->theme->getSetting('cdn_custom_' . $type . '_min')) {
-        $this->assets['min'][$type][] = $setting;
+        $assets['min'][$type][] = $setting;
       }
     }
-    return parent::getAssets($types);
+    return $assets;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function processDefinition(array &$definition, $plugin_id) {
+    // Intentionally left blank so it doesn't trigger a deprecation warning.
   }
 
 }

@@ -745,28 +745,19 @@ function bootstrap_element_smart_description(array &$element, array &$target = N
  *   $assets = bootstrap_get_cdn_assets($type, $provider, $theme);
  *
  *   // After.
- *   use Drupal\bootstrap\Bootstrap;
- *   $theme = Bootstrap::getTheme($theme);
- *   $assets = [];
- *   if ($provider = $theme->getProvider($provider)) {
- *     $assets = $provider->getAssets($type);
- *   }
+ *   use Drupal\bootstrap\Plugin\ProviderManager;
+ *   $assets = ProviderManager::load($theme, $provider)->getAssets($type);
  * @endcode
  *
  * @see \Drupal\bootstrap\Plugin\Provider\Custom::getAssets()
  * @see \Drupal\bootstrap\Plugin\Provider\JsDelivr::getAssets()
  * @see \Drupal\bootstrap\Plugin\Provider\ProviderBase::getAssets()
  * @see \Drupal\bootstrap\Plugin\Provider\ProviderInterface::getAssets()
- * @see \Drupal\bootstrap\Theme::getProvider()
- * @see \Drupal\bootstrap\Bootstrap::getTheme()
+ * @see \Drupal\bootstrap\Plugin\ProviderManager::load()
  */
 function bootstrap_get_cdn_assets($type = NULL, $provider = NULL, $theme = NULL) {
   Bootstrap::deprecated();
-  $assets = [];
-  if ($provider = Bootstrap::getTheme($theme)->getProvider($provider)) {
-    $assets = $provider->getAssets($type);
-  }
-  return $assets;
+  return ProviderManager::load($theme, $provider)->getAssets($type);
 }
 
 /**

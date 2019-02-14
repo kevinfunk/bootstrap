@@ -11,6 +11,7 @@ use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Render\Markup;
 
 /**
  * The primary class for the Drupal Bootstrap base theme.
@@ -415,15 +416,15 @@ class Bootstrap {
 
   /**
    * Logs and displays a warning about a deprecated function/method being used.
+   *
+   * @param bool $show_message
+   *   Flag indicating whether to show a message to the user. If TRUE, it will
+   *   force showing the message. If FALSE, it will only log the message. If
+   *   not set, showing the message will be determined by whether the current
+   *   theme has suppressed showing deprecated warnings.
    */
-  public static function deprecated() {
-    // Log backtrace.
+  public static function deprecated($show_message = NULL) {
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
-    \Drupal::logger('bootstrap')->warning('<pre><code>' . print_r($backtrace, TRUE) . '</code></pre>');
-
-    if (!self::getTheme()->getSetting('suppress_deprecated_warnings')) {
-      return;
-    }
 
     // Extrapolate the caller.
     $caller = $backtrace[1];
@@ -432,11 +433,21 @@ class Bootstrap {
       $parts = explode('\\', $caller['class']);
       $class = array_pop($parts) . '::';
     }
-    drupal_set_message(t('The following function(s) or method(s) have been deprecated, please check the logs for a more detailed backtrace on where these are being invoked. Click on the function or method link to search the documentation site for a possible replacement or solution.'), 'warning');
-    drupal_set_message(t('<a href=":url" target="_blank">@title</a>.', [
+
+    $message = t('The following function(s) or method(s) have been deprecated, please check the logs for a more detailed backtrace on where these are being invoked. Click on the function or method link to search the documentation site for a possible replacement or solution: <a href=":url" target="_blank">@title</a>', [
       ':url' => self::apiSearchUrl($class . $caller['function']),
-      '@title' => ($class ? $caller['class'] . $caller['type'] : '') . $caller['function'] . '()',
-    ]), 'warning');
+      '@title' => ($class ? $caller['class'] . '::' : '') . $caller['function'] . '()',
+    ]);
+
+    if ($show_message || (!isset($show_message) && !self::getTheme()->getSetting('suppress_deprecated_warnings', FALSE))) {
+      drupal_set_message($message, 'warning');
+    }
+
+    // Log message and accompanying backtrace.
+    \Drupal::logger('bootstrap')->warning('<div>@message</div><pre><code>@backtrace</code></pre>', [
+      '@message' => $message,
+      '@backtrace' => Markup::create(print_r($backtrace, TRUE)),
+    ]);
   }
 
   /**

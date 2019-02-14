@@ -56,9 +56,7 @@ class CdnProvider extends SettingBase {
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->providerManager = new ProviderManager($this->theme);
-    if (isset($plugin_definition['cdn_provider'])) {
-      $this->provider = $this->theme->getProvider($plugin_definition['cdn_provider']);
-    }
+    $this->provider = $this->providerManager->get(isset($plugin_definition['cdn_provider']) ? $plugin_definition['cdn_provider'] : NULL);
   }
 
   /**
@@ -80,10 +78,12 @@ class CdnProvider extends SettingBase {
     // Intercept possible manual import of API data via AJAX callback.
     $this->importProviderData($form_state);
 
-    $providers = $this->theme->getProviders();
-
     $options = [];
-    foreach ($providers as $plugin_id => $provider) {
+    foreach ($this->theme->getProviders() as $plugin_id => $provider) {
+      // Skip the broken provider.
+      if ($plugin_id === '_broken') {
+        continue;
+      }
       $options[$plugin_id] = $provider->getLabel();
       $this->createProviderGroup($group, $provider);
     }

@@ -38,8 +38,9 @@ class CdnJsdelivrVersion extends CdnProvider {
 
     $plugin_id = Html::cleanCssIdentifier($this->provider->getPluginId());
     $setting = $this->getSettingElement($form, $form_state);
+    $versions = $this->provider->getCdnVersions();
 
-    $setting->setProperty('options', $this->provider->getVersions());
+    $setting->setProperty('options', $versions);
     $setting->setProperty('ajax', [
       'callback' => [get_class($this), 'ajaxCallback'],
       'wrapper' => 'cdn-provider-' . $plugin_id,

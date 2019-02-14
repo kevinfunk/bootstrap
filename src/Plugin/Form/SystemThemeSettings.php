@@ -119,6 +119,7 @@ class SystemThemeSettings extends FormBase implements FormInterface {
     $cache_tags = [];
     $save = FALSE;
     $settings = $theme->settings();
+    $rebuild_cdn_assets = FALSE;
 
     // Iterate over all setting plugins and manually save them since core's
     // process is severely limiting and somewhat broken.
@@ -147,6 +148,11 @@ class SystemThemeSettings extends FormBase implements FormInterface {
         // Retrieve the cache tags for the setting.
         $cache_tags = array_unique(array_merge($setting->getCacheTags()));
 
+        // A CDN setting has changed, flag that CDN assets should be rebuilt.
+        if (strpos($name, 'cdn') === 0) {
+          $rebuild_cdn_assets = TRUE;
+        }
+
         // Flag the save.
         $save = TRUE;
       }
@@ -157,6 +163,11 @@ class SystemThemeSettings extends FormBase implements FormInterface {
 
     // Save the settings, if needed.
     if ($save) {
+      // Remove any cached CDN assets so they can be rebuilt.
+      if ($rebuild_cdn_assets) {
+        $settings->clear('cdn_cache');
+      }
+
       $settings->save();
 
       // Invalidate necessary cache tags.

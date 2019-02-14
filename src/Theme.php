@@ -2,6 +2,7 @@
 
 namespace Drupal\bootstrap;
 
+use Drupal\bootstrap\Plugin\Provider\Broken;
 use Drupal\bootstrap\Plugin\ProviderManager;
 use Drupal\bootstrap\Plugin\SettingManager;
 use Drupal\bootstrap\Plugin\UpdateManager;
@@ -470,21 +471,15 @@ class Theme {
    * Retrieves the CDN provider.
    *
    * @param string $provider
-   *   A CDN provider name. Defaults to the provider set in the theme settings.
+   *   Optional. A CDN provider name. If not set, defaults to the CDN
+   *   provider set in the theme settings.
    *
    * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface|false
-   *   A provider instance or FALSE if there is no provider.
+   *   A provider instance or FALSE if no provider is set.
    */
   public function getProvider($provider = NULL) {
-    // Only continue if the theme is Bootstrap based.
-    if ($this->isBootstrap()) {
-      $provider = $provider ?: $this->getSetting('cdn_provider');
-      $provider_manager = new ProviderManager($this);
-      if ($provider_manager->hasDefinition($provider)) {
-        return $provider_manager->createInstance($provider, ['theme' => $this]);
-      }
-    }
-    return FALSE;
+    $instance = ProviderManager::load($this, $provider);
+    return $instance instanceof Broken || !$this->isBootstrap() ? FALSE : $instance;
   }
 
   /**
@@ -500,10 +495,10 @@ class Theme {
     if ($this->isBootstrap()) {
       $provider_manager = new ProviderManager($this);
       foreach (array_keys($provider_manager->getDefinitions()) as $provider) {
-        if ($provider === 'none') {
+        if ($provider === 'none' || $provider === '_broken') {
           continue;
         }
-        $providers[$provider] = $provider_manager->createInstance($provider, ['theme' => $this]);
+        $providers[$provider] = $provider_manager->get($provider, ['theme' => $this]);
       }
     }
 
