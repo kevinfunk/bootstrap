@@ -286,6 +286,19 @@ abstract class ProviderBase {
   }
 
   /**
+   * Allows providers a way to map a version to a different version.
+   *
+   * @param string $version
+   *   The version to map.
+   *
+   * @return string
+   *   The mapped version.
+   */
+  protected function mapVersion($version) {
+    return $version;
+  }
+
+  /**
    * Retrieves JSON from a URI.
    *
    * @param string $uri

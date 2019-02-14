@@ -88,8 +88,9 @@ class JsDelivr extends ProviderBase {
       $instance = $this;
       $this->themes[$version] = $this->cacheGet('themes.' . static::escapeDelimiter($version), array(), function ($themes) use ($version, $instance) {
         foreach (array('bootstrap', 'bootswatch') as $package) {
-          $files = $instance->requestApiV1($package, $version);
-          $themes = $instance->parseThemes($files, $package, $version, $themes);
+          $mappedVersion = $instance->mapVersion($version, $package);
+          $files = $instance->requestApiV1($package, $mappedVersion);
+          $themes = $instance->parseThemes($files, $package, $mappedVersion, $themes);
         }
         return $themes;
       });
@@ -116,6 +117,30 @@ class JsDelivr extends ProviderBase {
       });
     }
     return $this->versions[$package];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function mapVersion($version, $package = NULL) {
+    // While the Bootswatch project attempts to maintain version parity with
+    // Bootstrap, it doesn't always happen. This causes issues when the system
+    // expects a 1:1 version match between Bootstrap and Bootswatch.
+    // @see https://github.com/thomaspark/bootswatch/issues/892#ref-issue-410070082
+    if ($package === 'bootswatch') {
+      switch ($version) {
+        // This version is "broken" because of jsDelivr's API limit.
+        case '3.4.1':
+          $version = '3.4.0';
+          break;
+
+        // This version doesn't exist.
+        case '3.1.1':
+          $version = '3.2.0';
+          break;
+      }
+    }
+    return $version;
   }
 
   /**
