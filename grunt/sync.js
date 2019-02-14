@@ -11,7 +11,12 @@ module.exports = function (grunt) {
     var simpleJsonRequest = require('simple-json-request');
     var semver = require('semver');
     var getJson = function (uri) {
-      return simpleJsonRequest.get({url: uri});
+      grunt.log.debug('Requesting JSON from: ' + uri);
+      return simpleJsonRequest.get({url: uri}).catch(function (e) {
+        grunt.log.fail('Unable to request JSON from:' + uri);
+        grunt.log.fail('(' + e.statusCode + ') ' + e);
+        return [];
+      });
     };
 
     // Internal variables.
@@ -33,10 +38,32 @@ module.exports = function (grunt) {
       grunt.verbose.writeln((expired ? 'EXPIRED' : 'VALID')[expired ? 'red' : 'green']);
     }
 
+    // While the Bootswatch project attempts to maintain version parity with
+    // Bootstrap, it doesn't always happen. This causes issues when the system
+    // expects a 1:1 version match between Bootstrap and Bootswatch.
+    // @see https://github.com/thomaspark/bootswatch/issues/892#ref-issue-410070082
+    var mapVersion = function ($version, $package) {
+      if ($package === 'bootswatch') {
+        switch ($version) {
+          // This version is "broken" because of jsDelivr's API limit.
+          case '3.4.1':
+            $version = '3.4.0';
+            break;
+
+          // This version doesn't exist.
+          case '3.1.1':
+            $version = '3.2.0';
+            break;
+        }
+      }
+      return $version;
+    };
+
     var getApiV1Json = function ($package) {
       var $json = {name: $package, assets: []};
       var $latest = '0.0.0';
       var $versions = [];
+      grunt.log.writeln('Retrieving data for: ' + $package);
       return getJson('https://data.jsdelivr.com/v1/package/npm/' + $package)
         .catch(function (error) {
           if (!(error instanceof Error)) {
@@ -56,7 +83,7 @@ module.exports = function (grunt) {
             if (!$version.match(/^3\.\d+\.\d+$/)) {
               return Promise.resolve();
             }
-            return getJson('https://data.jsdelivr.com/v1/package/npm/' + $package + '@' + $version + '/flat')
+            return getJson('https://data.jsdelivr.com/v1/package/npm/' + $package + '@' + mapVersion($version, $package) + '/flat')
               .then(function ($versionJson) {
                 // Skip empty files.
                 if (!$versionJson.files || !$versionJson.files.length) {
@@ -176,7 +203,7 @@ module.exports = function (grunt) {
         for (var version in libraries[library]) {
           if (!libraries[library].hasOwnProperty(version)) continue;
 
-          var endpoint = library + '#' + version;
+          var endpoint = library + '#' + mapVersion(version, library);
 
           // Check if library is already installed. If so, skip.
           var versionPath = path.join(librariesPath, version);

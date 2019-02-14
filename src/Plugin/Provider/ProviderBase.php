@@ -318,6 +318,19 @@ class ProviderBase extends PluginBase implements ProviderInterface {
   }
 
   /**
+   * Allows providers a way to map a version to a different version.
+   *
+   * @param string $version
+   *   The version to map.
+   *
+   * @return string
+   *   The mapped version.
+   */
+  protected function mapVersion($version) {
+    return $version;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function hasError() {
