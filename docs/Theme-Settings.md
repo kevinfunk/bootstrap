@@ -28,13 +28,8 @@ SETTING_NAME: SETTING_VALUE
 button_colorize
     </td>
     <td>
-      <div class="help-block">
-Adds classes to buttons based on their text value.
-      </div>
-      <pre class=" language-yaml"><code>
-button_colorize: 1
-
-</code></pre>
+      <div class="help-block">Adds classes to buttons based on their text value.</div>
+      <pre class="language-yaml"><code>button_colorize: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -42,13 +37,8 @@ button_colorize: 1
 button_iconize
     </td>
     <td>
-      <div class="help-block">
-Adds icons to buttons based on the text value
-      </div>
-      <pre class=" language-yaml"><code>
-button_iconize: 1
-
-</code></pre>
+      <div class="help-block">Adds icons to buttons based on the text value</div>
+      <pre class="language-yaml"><code>button_iconize: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -56,13 +46,8 @@ button_iconize: 1
 button_size
     </td>
     <td>
-      <div class="help-block">
-Defines the Bootstrap Buttons specific size
-      </div>
-      <pre class=" language-yaml"><code>
-button_size: ''
-
-</code></pre>
+      <div class="help-block">Defines the Bootstrap Buttons specific size</div>
+      <pre class="language-yaml"><code>button_size: ''</code></pre>
     </td>
   </tr>
   </tbody>
@@ -85,14 +70,8 @@ button_size: ''
 fluid_container
     </td>
     <td>
-      <div class="help-block">
-Uses the <code>.container-fluid</code> class instead of
-<code>.container</code>.
-      </div>
-      <pre class=" language-yaml"><code>
-fluid_container: 0
-
-</code></pre>
+      <div class="help-block">Uses the <code>.container-fluid</code> class instead of <code>.container</code>.</div>
+      <pre class="language-yaml"><code>fluid_container: 0</code></pre>
     </td>
   </tr>
   </tbody>
@@ -115,14 +94,8 @@ fluid_container: 0
 forms_has_error_value_toggle
     </td>
     <td>
-      <div class="help-block">
-If an element has a <code>.has-error</code> class attached to it, enabling
-this will automatically remove that class when a value is entered.
-      </div>
-      <pre class=" language-yaml"><code>
-forms_has_error_value_toggle: 1
-
-</code></pre>
+      <div class="help-block">If an element has a <code>.has-error</code> class attached to it, enabling this will automatically remove that class when a value is entered.</div>
+      <pre class="language-yaml"><code>forms_has_error_value_toggle: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -130,16 +103,8 @@ forms_has_error_value_toggle: 1
 forms_required_has_error
     </td>
     <td>
-      <div class="help-block">
-If an element in a form is required, enabling this will always display the
-element with a <code>.has-error</code> class. This turns the element red
-and helps in usability for determining which form elements are required to
-submit the form.
-      </div>
-      <pre class=" language-yaml"><code>
-forms_required_has_error: 0
-
-</code></pre>
+      <div class="help-block">If an element in a form is required, enabling this will always display the element with a <code>.has-error</code> class. This turns the element red and helps in usability for determining which form elements are required to submit the form.</div>
+      <pre class="language-yaml"><code>forms_required_has_error: 0</code></pre>
     </td>
   </tr>
   <tr>
@@ -147,15 +112,8 @@ forms_required_has_error: 0
 forms_smart_descriptions
     </td>
     <td>
-      <div class="help-block">
-Convert descriptions into tooltips (must be enabled) automatically based on
-certain criteria. This helps reduce the, sometimes unnecessary, amount of
-noise on a page full of form elements.
-      </div>
-      <pre class=" language-yaml"><code>
-forms_smart_descriptions: 1
-
-</code></pre>
+      <div class="help-block">Convert descriptions into tooltips (must be enabled) automatically based on certain criteria. This helps reduce the, sometimes unnecessary, amount of noise on a page full of form elements.</div>
+      <pre class="language-yaml"><code>forms_smart_descriptions: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -163,15 +121,8 @@ forms_smart_descriptions: 1
 forms_smart_descriptions_allowed_tags
     </td>
     <td>
-      <div class="help-block">
-Prevents descriptions from becoming tooltips by checking for HTML not in
-the list above (i.e. links). Separate by commas. To disable this filtering
-criteria, leave an empty value.
-      </div>
-      <pre class=" language-yaml"><code>
-forms_smart_descriptions_allowed_tags: 'b, code, em, i, kbd, span, strong'
-
-</code></pre>
+      <div class="help-block">Prevents descriptions from becoming tooltips by checking for HTML not in the list above (i.e. links). Separate by commas. To disable this filtering criteria, leave an empty value.</div>
+      <pre class="language-yaml"><code>forms_smart_descriptions_allowed_tags: 'b, code, em, i, kbd, span, strong'</code></pre>
     </td>
   </tr>
   <tr>
@@ -179,15 +130,8 @@ forms_smart_descriptions_allowed_tags: 'b, code, em, i, kbd, span, strong'
 forms_smart_descriptions_limit
     </td>
     <td>
-      <div class="help-block">
-Prevents descriptions from becoming tooltips by checking the character
-length of the description (HTML is not counted towards this limit). To
-disable this filtering criteria, leave an empty value.
-      </div>
-      <pre class=" language-yaml"><code>
-forms_smart_descriptions_limit: '250'
-
-</code></pre>
+      <div class="help-block">Prevents descriptions from becoming tooltips by checking the character length of the description (HTML is not counted towards this limit). To disable this filtering criteria, leave an empty value.</div>
+      <pre class="language-yaml"><code>forms_smart_descriptions_limit: '250'</code></pre>
     </td>
   </tr>
   </tbody>
@@ -210,16 +154,8 @@ forms_smart_descriptions_limit: '250'
 image_responsive
     </td>
     <td>
-      <div class="help-block">
-Images in Bootstrap 3 can be made responsive-friendly via the addition of
-the <code>.img-responsive</code> class. This applies <code>max-width:
-100%;</code> and <code>height: auto;</code> to the image so that it scales
-nicely to the parent element.
-      </div>
-      <pre class=" language-yaml"><code>
-image_responsive: 1
-
-</code></pre>
+      <div class="help-block">Images in Bootstrap 3 can be made responsive-friendly via the addition of the <code>.img-responsive</code> class. This applies <code>max-width: 100%;</code> and <code>height: auto;</code> to the image so that it scales nicely to the parent element.</div>
+      <pre class="language-yaml"><code>image_responsive: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -227,14 +163,8 @@ image_responsive: 1
 image_shape
     </td>
     <td>
-      <div class="help-block">
-Add classes to an <code>&lt;img&gt;</code> element to easily style images
-in any project.
-      </div>
-      <pre class=" language-yaml"><code>
-image_shape: ''
-
-</code></pre>
+      <div class="help-block">Add classes to an <code>&lt;img&gt;</code> element to easily style images in any project.</div>
+      <pre class="language-yaml"><code>image_shape: ''</code></pre>
     </td>
   </tr>
   </tbody>
@@ -257,13 +187,8 @@ image_shape: ''
 table_bordered
     </td>
     <td>
-      <div class="help-block">
-Add borders on all sides of the table and cells.
-      </div>
-      <pre class=" language-yaml"><code>
-table_bordered: 0
-
-</code></pre>
+      <div class="help-block">Add borders on all sides of the table and cells.</div>
+      <pre class="language-yaml"><code>table_bordered: 0</code></pre>
     </td>
   </tr>
   <tr>
@@ -271,13 +196,8 @@ table_bordered: 0
 table_condensed
     </td>
     <td>
-      <div class="help-block">
-Make tables more compact by cutting cell padding in half.
-      </div>
-      <pre class=" language-yaml"><code>
-table_condensed: 0
-
-</code></pre>
+      <div class="help-block">Make tables more compact by cutting cell padding in half.</div>
+      <pre class="language-yaml"><code>table_condensed: 0</code></pre>
     </td>
   </tr>
   <tr>
@@ -285,13 +205,8 @@ table_condensed: 0
 table_hover
     </td>
     <td>
-      <div class="help-block">
-Enable a hover state on table rows.
-      </div>
-      <pre class=" language-yaml"><code>
-table_hover: 1
-
-</code></pre>
+      <div class="help-block">Enable a hover state on table rows.</div>
+      <pre class="language-yaml"><code>table_hover: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -299,13 +214,8 @@ table_hover: 1
 table_striped
     </td>
     <td>
-      <div class="help-block">
-Add zebra-striping to any table row within the <code>&lt;tbody&gt;</code>.
-      </div>
-      <pre class=" language-yaml"><code>
-table_striped: 1
-
-</code></pre>
+      <div class="help-block">Add zebra-striping to any table row within the <code>&lt;tbody&gt;</code>.</div>
+      <pre class="language-yaml"><code>table_striped: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -313,18 +223,8 @@ table_striped: 1
 table_responsive
     </td>
     <td>
-      <div class="help-block">
-Wraps tables with <code>.table-responsive</code> to make them horizontally
-scroll when viewing them on devices under 768px. When viewing on devices
-larger than 768px, you will not see a difference in the presentational
-aspect of these tables. The <code>Automatic</code> option will only apply
-this setting for front-end facing tables, not the tables in administrative
-areas.
-      </div>
-      <pre class=" language-yaml"><code>
-table_responsive: -1
-
-</code></pre>
+      <div class="help-block">Wraps tables with <code>.table-responsive</code> to make them horizontally scroll when viewing them on devices under 768px. When viewing on devices larger than 768px, you will not see a difference in the presentational aspect of these tables. The <code>Automatic</code> option will only apply this setting for front-end facing tables, not the tables in administrative areas.</div>
+      <pre class="language-yaml"><code>table_responsive: -1</code></pre>
     </td>
   </tr>
   </tbody>
@@ -347,13 +247,8 @@ table_responsive: -1
 breadcrumb
     </td>
     <td>
-      <div class="help-block">
-Show or hide the Breadcrumbs
-      </div>
-      <pre class=" language-yaml"><code>
-breadcrumb: '1'
-
-</code></pre>
+      <div class="help-block">Show or hide the Breadcrumbs</div>
+      <pre class="language-yaml"><code>breadcrumb: '1'</code></pre>
     </td>
   </tr>
   <tr>
@@ -361,14 +256,8 @@ breadcrumb: '1'
 breadcrumb_home
     </td>
     <td>
-      <div class="help-block">
-If your site has a module dedicated to handling breadcrumbs already, ensure
-this setting is enabled.
-      </div>
-      <pre class=" language-yaml"><code>
-breadcrumb_home: 0
-
-</code></pre>
+      <div class="help-block">If your site has a module dedicated to handling breadcrumbs already, ensure this setting is enabled.</div>
+      <pre class="language-yaml"><code>breadcrumb_home: 0</code></pre>
     </td>
   </tr>
   <tr>
@@ -376,14 +265,8 @@ breadcrumb_home: 0
 breadcrumb_title
     </td>
     <td>
-      <div class="help-block">
-If your site has a module dedicated to handling breadcrumbs already, ensure
-this setting is disabled.
-      </div>
-      <pre class=" language-yaml"><code>
-breadcrumb_title: 1
-
-</code></pre>
+      <div class="help-block">If your site has a module dedicated to handling breadcrumbs already, ensure this setting is disabled.</div>
+      <pre class="language-yaml"><code>breadcrumb_title: 1</code></pre>
     </td>
   </tr>
   </tbody>
@@ -406,13 +289,8 @@ breadcrumb_title: 1
 navbar_inverse
     </td>
     <td>
-      <div class="help-block">
-Select if you want the inverse navbar style.
-      </div>
-      <pre class=" language-yaml"><code>
-navbar_inverse: 0
-
-</code></pre>
+      <div class="help-block">Select if you want the inverse navbar style.</div>
+      <pre class="language-yaml"><code>navbar_inverse: 0</code></pre>
     </td>
   </tr>
   <tr>
@@ -420,13 +298,8 @@ navbar_inverse: 0
 navbar_position
     </td>
     <td>
-      <div class="help-block">
-Determines where the navbar is positioned on the page.
-      </div>
-      <pre class=" language-yaml"><code>
-navbar_position: ''
-
-</code></pre>
+      <div class="help-block">Determines where the navbar is positioned on the page.</div>
+      <pre class="language-yaml"><code>navbar_position: ''</code></pre>
     </td>
   </tr>
   </tbody>
@@ -449,12 +322,8 @@ navbar_position: ''
 region_wells
     </td>
     <td>
-      <div class="help-block">
-Enable the <code>.well</code>, <code>.well-sm</code> or
-<code>.well-lg</code> classes for specified regions.
-      </div>
-      <pre class=" language-yaml"><code>
-region_wells:
+      <div class="help-block">Enable the <code>.well</code>, <code>.well-sm</code> or <code>.well-lg</code> classes for specified regions.</div>
+      <pre class="language-yaml"><code>region_wells:
   navigation: ''
   navigation_collapsible: ''
   header: ''
@@ -463,9 +332,7 @@ region_wells:
   content: ''
   sidebar_first: ''
   sidebar_second: well
-  footer: ''
-
-</code></pre>
+  footer: ''</code></pre>
     </td>
   </tr>
   </tbody>
@@ -488,13 +355,7 @@ region_wells:
 modal_enabled
     </td>
     <td>
-      <div class="help-block">
-
-      </div>
-      <pre class=" language-yaml"><code>
-modal_enabled: 1
-
-</code></pre>
+      <pre class="language-yaml"><code>modal_enabled: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -502,16 +363,8 @@ modal_enabled: 1
 modal_jquery_ui_bridge
     </td>
     <td>
-      <div class="help-block">
-Enabling this replaces the core/jquery.ui.dialog dependency in the
-core/drupal.dialog library with a jQuery UI Dialog widget bridge. This
-bridge adds support to Bootstrap Modals so that it may interpret jQuery UI
-Dialog functionality.
-      </div>
-      <pre class=" language-yaml"><code>
-modal_jquery_ui_bridge: 1
-
-</code></pre>
+      <div class="help-block">Enabling this replaces the core/jquery.ui.dialog dependency in the core/drupal.dialog library with a jQuery UI Dialog widget bridge. This bridge adds support to Bootstrap Modals so that it may interpret jQuery UI Dialog functionality.</div>
+      <pre class="language-yaml"><code>modal_jquery_ui_bridge: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -519,13 +372,8 @@ modal_jquery_ui_bridge: 1
 modal_animation
     </td>
     <td>
-      <div class="help-block">
-Apply a CSS fade transition to modals.
-      </div>
-      <pre class=" language-yaml"><code>
-modal_animation: 1
-
-</code></pre>
+      <div class="help-block">Apply a CSS fade transition to modals.</div>
+      <pre class="language-yaml"><code>modal_animation: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -533,14 +381,8 @@ modal_animation: 1
 modal_backdrop
     </td>
     <td>
-      <div class="help-block">
-Includes a modal-backdrop element. Alternatively, specify
-<code>static</code> for a backdrop which doesn't close the modal on click.
-      </div>
-      <pre class=" language-yaml"><code>
-modal_backdrop: 'true'
-
-</code></pre>
+      <div class="help-block">Includes a modal-backdrop element. Alternatively, specify <code>static</code> for a backdrop which doesn't close the modal on click.</div>
+      <pre class="language-yaml"><code>modal_backdrop: 'true'</code></pre>
     </td>
   </tr>
   <tr>
@@ -548,15 +390,8 @@ modal_backdrop: 'true'
 modal_focus_input
     </td>
     <td>
-      <div class="help-block">
-Enabling this focuses on the first available and visible input found in the
-modal after it's opened. If no element is found, the close button (if
-visible) is focused instead.
-      </div>
-      <pre class=" language-yaml"><code>
-modal_focus_input: 1
-
-</code></pre>
+      <div class="help-block">Enabling this focuses on the first available and visible input found in the modal after it's opened. If no element is found, the close button (if visible) is focused instead.</div>
+      <pre class="language-yaml"><code>modal_focus_input: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -564,13 +399,8 @@ modal_focus_input: 1
 modal_keyboard
     </td>
     <td>
-      <div class="help-block">
-Closes the modal when escape key is pressed.
-      </div>
-      <pre class=" language-yaml"><code>
-modal_keyboard: 1
-
-</code></pre>
+      <div class="help-block">Closes the modal when escape key is pressed.</div>
+      <pre class="language-yaml"><code>modal_keyboard: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -578,14 +408,8 @@ modal_keyboard: 1
 modal_select_text
     </td>
     <td>
-      <div class="help-block">
-Enabling this selects the text of the first available and visible input
-found after it has been focused.
-      </div>
-      <pre class=" language-yaml"><code>
-modal_select_text: 1
-
-</code></pre>
+      <div class="help-block">Enabling this selects the text of the first available and visible input found after it has been focused.</div>
+      <pre class="language-yaml"><code>modal_select_text: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -593,13 +417,8 @@ modal_select_text: 1
 modal_show
     </td>
     <td>
-      <div class="help-block">
-Shows the modal when initialized.
-      </div>
-      <pre class=" language-yaml"><code>
-modal_show: 1
-
-</code></pre>
+      <div class="help-block">Shows the modal when initialized.</div>
+      <pre class="language-yaml"><code>modal_show: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -607,14 +426,8 @@ modal_show: 1
 modal_size
     </td>
     <td>
-      <div class="help-block">
-Defines the modal size between the default, <code>modal-sm</code> and
-<code>modal-lg</code>.
-      </div>
-      <pre class=" language-yaml"><code>
-modal_size: ''
-
-</code></pre>
+      <div class="help-block">Defines the modal size between the default, <code>modal-sm</code> and <code>modal-lg</code>.</div>
+      <pre class="language-yaml"><code>modal_size: ''</code></pre>
     </td>
   </tr>
   </tbody>
@@ -637,16 +450,8 @@ modal_size: ''
 popover_enabled
     </td>
     <td>
-      <div class="help-block">
-Elements that have the <code>data-toggle=&quot;popover&quot;</code>
-attribute set will automatically initialize the popover upon page load.
-<strong class='error text-error'>WARNING: This feature can sometimes impact
-performance. Disable if pages appear to hang after initial load.</strong>
-      </div>
-      <pre class=" language-yaml"><code>
-popover_enabled: 1
-
-</code></pre>
+      <div class="help-block">Elements that have the <code>data-toggle="popover"</code> attribute set will automatically initialize the popover upon page load. <strong class='error text-error'>WARNING: This feature can sometimes impact performance. Disable if pages appear to hang after initial load.</strong></div>
+      <pre class="language-yaml"><code>popover_enabled: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -654,13 +459,8 @@ popover_enabled: 1
 popover_animation
     </td>
     <td>
-      <div class="help-block">
-Apply a CSS fade transition to the popover.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_animation: 1
-
-</code></pre>
+      <div class="help-block">Apply a CSS fade transition to the popover.</div>
+      <pre class="language-yaml"><code>popover_animation: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -668,15 +468,8 @@ popover_animation: 1
 popover_auto_close
     </td>
     <td>
-      <div class="help-block">
-If enabled, the active popover will automatically close when it loses
-focus, when a click occurs anywhere in the DOM (outside the popover), the
-escape key (ESC) is pressed or when another popover is opened.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_auto_close: 1
-
-</code></pre>
+      <div class="help-block">If enabled, the active popover will automatically close when it loses focus, when a click occurs anywhere in the DOM (outside the popover), the escape key (ESC) is pressed or when another popover is opened.</div>
+      <pre class="language-yaml"><code>popover_auto_close: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -684,17 +477,8 @@ popover_auto_close: 1
 popover_container
     </td>
     <td>
-      <div class="help-block">
-Appends the popover to a specific element. Example: <code>body</code>. This
-option is particularly useful in that it allows you to position the popover
-in the flow of the document near the triggering element - which will
-prevent the popover from floating away from the triggering element during a
-window resize.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_container: body
-
-</code></pre>
+      <div class="help-block">Appends the popover to a specific element. Example: <code>body</code>. This option is particularly useful in that it allows you to position the popover in the flow of the document near the triggering element - which will prevent the popover from floating away from the triggering element during a window resize.</div>
+      <pre class="language-yaml"><code>popover_container: body</code></pre>
     </td>
   </tr>
   <tr>
@@ -702,14 +486,8 @@ popover_container: body
 popover_content
     </td>
     <td>
-      <div class="help-block">
-Default content value if <code>data-content</code> or
-<code>data-target</code> attributes are not present.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_content: ''
-
-</code></pre>
+      <div class="help-block">Default content value if <code>data-content</code> or <code>data-target</code> attributes are not present.</div>
+      <pre class="language-yaml"><code>popover_content: ''</code></pre>
     </td>
   </tr>
   <tr>
@@ -717,14 +495,8 @@ popover_content: ''
 popover_delay
     </td>
     <td>
-      <div class="help-block">
-The amount of time to delay showing and hiding the popover (in
-milliseconds). Does not apply to manual trigger type.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_delay: '0'
-
-</code></pre>
+      <div class="help-block">The amount of time to delay showing and hiding the popover (in milliseconds). Does not apply to manual trigger type.</div>
+      <pre class="language-yaml"><code>popover_delay: '0'</code></pre>
     </td>
   </tr>
   <tr>
@@ -732,15 +504,8 @@ popover_delay: '0'
 popover_html
     </td>
     <td>
-      <div class="help-block">
-Insert HTML into the popover. If false, jQuery's text method will be used
-to insert content into the DOM. Use text if you're worried about XSS
-attacks.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_html: 0
-
-</code></pre>
+      <div class="help-block">Insert HTML into the popover. If false, jQuery's text method will be used to insert content into the DOM. Use text if you're worried about XSS attacks.</div>
+      <pre class="language-yaml"><code>popover_html: 0</code></pre>
     </td>
   </tr>
   <tr>
@@ -748,16 +513,8 @@ popover_html: 0
 popover_placement
     </td>
     <td>
-      <div class="help-block">
-Where to position the popover. When <code>auto</code> is specified, it will
-dynamically reorient the popover. For example, if placement is <code>auto
-left</code>, the popover will display to the left when possible, otherwise
-it will display right.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_placement: right
-
-</code></pre>
+      <div class="help-block">Where to position the popover. When <code>auto</code> is specified, it will dynamically reorient the popover. For example, if placement is <code>auto left</code>, the popover will display to the left when possible, otherwise it will display right.</div>
+      <pre class="language-yaml"><code>popover_placement: right</code></pre>
     </td>
   </tr>
   <tr>
@@ -765,15 +522,8 @@ popover_placement: right
 popover_selector
     </td>
     <td>
-      <div class="help-block">
-If a selector is provided, tooltip objects will be delegated to the
-specified targets. In practice, this is used to enable dynamic HTML content
-to have popovers added.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_selector: ''
-
-</code></pre>
+      <div class="help-block">If a selector is provided, tooltip objects will be delegated to the specified targets. In practice, this is used to enable dynamic HTML content to have popovers added.</div>
+      <pre class="language-yaml"><code>popover_selector: ''</code></pre>
     </td>
   </tr>
   <tr>
@@ -781,13 +531,8 @@ popover_selector: ''
 popover_title
     </td>
     <td>
-      <div class="help-block">
-Default title value if <code>title</code> attribute isn't present.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_title: ''
-
-</code></pre>
+      <div class="help-block">Default title value if <code>title</code> attribute isn't present.</div>
+      <pre class="language-yaml"><code>popover_title: ''</code></pre>
     </td>
   </tr>
   <tr>
@@ -795,13 +540,8 @@ popover_title: ''
 popover_trigger
     </td>
     <td>
-      <div class="help-block">
-How a popover is triggered.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_trigger: click
-
-</code></pre>
+      <div class="help-block">How a popover is triggered.</div>
+      <pre class="language-yaml"><code>popover_trigger: click</code></pre>
     </td>
   </tr>
   <tr>
@@ -809,14 +549,8 @@ popover_trigger: click
 popover_trigger_autoclose
     </td>
     <td>
-      <div class="help-block">
-Will automatically close the current popover if a click occurs anywhere
-else other than the popover element.
-      </div>
-      <pre class=" language-yaml"><code>
-popover_trigger_autoclose: 1
-
-</code></pre>
+      <div class="help-block">Will automatically close the current popover if a click occurs anywhere else other than the popover element.</div>
+      <pre class="language-yaml"><code>popover_trigger_autoclose: 1</code></pre>
     </td>
   </tr>
   </tbody>
@@ -839,17 +573,8 @@ popover_trigger_autoclose: 1
 tooltip_enabled
     </td>
     <td>
-      <div class="help-block">
-Elements that have the <code>data-toggle="tooltip"</code>
-attribute set will automatically initialize the tooltip upon page load.
-<strong class='error text-error'>WARNING: This feature can sometimes impact
-performance. Disable if pages appear to "hang" after initial
-load.</strong>
-      </div>
-      <pre class=" language-yaml"><code>
-tooltip_enabled: 1
-
-</code></pre>
+      <div class="help-block">Elements that have the <code>data-toggle="tooltip"</code> attribute set will automatically initialize the tooltip upon page load. <strong class='error text-error'>WARNING: This feature can sometimes impact performance. Disable if pages appear to "hang" after initial load.</strong></div>
+      <pre class="language-yaml"><code>tooltip_enabled: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -857,13 +582,8 @@ tooltip_enabled: 1
 tooltip_animation
     </td>
     <td>
-      <div class="help-block">
-Apply a CSS fade transition to the tooltip.
-      </div>
-      <pre class=" language-yaml"><code>
-tooltip_animation: 1
-
-</code></pre>
+      <div class="help-block">Apply a CSS fade transition to the tooltip.</div>
+      <pre class="language-yaml"><code>tooltip_animation: 1</code></pre>
     </td>
   </tr>
   <tr>
@@ -871,13 +591,8 @@ tooltip_animation: 1
 tooltip_container
     </td>
     <td>
-      <div class="help-block">
-Appends the tooltip to a specific element. Example: <code>body</code>.
-      </div>
-      <pre class=" language-yaml"><code>
-tooltip_container: body
-
-</code></pre>
+      <div class="help-block">Appends the tooltip to a specific element. Example: <code>body</code>.</div>
+      <pre class="language-yaml"><code>tooltip_container: body</code></pre>
     </td>
   </tr>
   <tr>
@@ -885,14 +600,8 @@ tooltip_container: body
 tooltip_delay
     </td>
     <td>
-      <div class="help-block">
-The amount of time to delay showing and hiding the tooltip (in
-milliseconds). Does not apply to manual trigger type.
-      </div>
-      <pre class=" language-yaml"><code>
-tooltip_delay: '0'
-
-</code></pre>
+      <div class="help-block">The amount of time to delay showing and hiding the tooltip (in milliseconds). Does not apply to manual trigger type.</div>
+      <pre class="language-yaml"><code>tooltip_delay: '0'</code></pre>
     </td>
   </tr>
   <tr>
@@ -900,15 +609,8 @@ tooltip_delay: '0'
 tooltip_html
     </td>
     <td>
-      <div class="help-block">
-Insert HTML into the tooltip. If false, jQuery's text method will be used
-to insert content into the DOM. Use text if you're worried about XSS
-attacks.
-      </div>
-      <pre class=" language-yaml"><code>
-tooltip_html: 0
-
-</code></pre>
+      <div class="help-block">Insert HTML into the tooltip. If false, jQuery's text method will be used to insert content into the DOM. Use text if you're worried about XSS attacks.</div>
+      <pre class="language-yaml"><code>tooltip_html: 0</code></pre>
     </td>
   </tr>
   <tr>
@@ -916,16 +618,8 @@ tooltip_html: 0
 tooltip_placement
     </td>
     <td>
-      <div class="help-block">
-Where to position the tooltip. When <code>auto</code> is specified, it will
-dynamically reorient the tooltip. For example, if placement is <code>auto
-left</code>, the tooltip will display to the left when possible, otherwise
-it will display right.
-      </div>
-      <pre class=" language-yaml"><code>
-tooltip_placement: 'auto left'
-
-</code></pre>
+      <div class="help-block">Where to position the tooltip. When <code>auto</code> is specified, it will dynamically reorient the tooltip. For example, if placement is <code>auto left</code>, the tooltip will display to the left when possible, otherwise it will display right.</div>
+      <pre class="language-yaml"><code>tooltip_placement: 'auto left'</code></pre>
     </td>
   </tr>
   <tr>
@@ -933,14 +627,8 @@ tooltip_placement: 'auto left'
 tooltip_selector
     </td>
     <td>
-      <div class="help-block">
-If a selector is provided, tooltip objects will be delegated to the
-specified targets.
-      </div>
-      <pre class=" language-yaml"><code>
-tooltip_selector: ''
-
-</code></pre>
+      <div class="help-block">If a selector is provided, tooltip objects will be delegated to the specified targets.</div>
+      <pre class="language-yaml"><code>tooltip_selector: ''</code></pre>
     </td>
   </tr>
   <tr>
@@ -948,13 +636,8 @@ tooltip_selector: ''
 tooltip_trigger
     </td>
     <td>
-      <div class="help-block">
-How a tooltip is triggered.
-      </div>
-      <pre class=" language-yaml"><code>
-tooltip_trigger: hover
-
-</code></pre>
+      <div class="help-block">How a tooltip is triggered.</div>
+      <pre class="language-yaml"><code>tooltip_trigger: hover</code></pre>
     </td>
   </tr>
   </tbody>
@@ -977,13 +660,8 @@ tooltip_trigger: hover
 cdn_provider
     </td>
     <td>
-      <div class="help-block">
-Choose the CDN Provider used to load Bootstrap resources.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_provider: jsdelivr
-
-</code></pre>
+      <div class="help-block">Choose the CDN Provider used to load Bootstrap resources.</div>
+      <pre class="language-yaml"><code>cdn_provider: jsdelivr</code></pre>
     </td>
   </tr>
   <tr>
@@ -991,15 +669,8 @@ cdn_provider: jsdelivr
 cdn_custom_css
     </td>
     <td>
-      <div class="help-block">
-It is best to use <code>https</code> protocols here as it will allow more
-flexibility if the need ever arises.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_custom_css:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.css'
-
-</code></pre>
+      <div class="help-block">It is best to use <code>https</code> protocols here as it will allow more flexibility if the need ever arises.</div>
+      <pre class="language-yaml"><code>cdn_custom_css: 'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.css'</code></pre>
     </td>
   </tr>
   <tr>
@@ -1007,15 +678,8 @@ cdn_custom_css:
 cdn_custom_css_min
     </td>
     <td>
-      <div class="help-block">
-Additionally, you can provide the minimized version of the file. It will be
-used instead if site aggregation is enabled.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_custom_css_min:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css'
-
-</code></pre>
+      <div class="help-block">Additionally, you can provide the minimized version of the file. It will be used instead if site aggregation is enabled.</div>
+      <pre class="language-yaml"><code>cdn_custom_css_min: 'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css'</code></pre>
     </td>
   </tr>
   <tr>
@@ -1023,15 +687,8 @@ cdn_custom_css_min:
 cdn_custom_js
     </td>
     <td>
-      <div class="help-block">
-It is best to use <code>https</code> protocols here as it will allow more
-flexibility if the need ever arises.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_custom_js:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.js'
-
-</code></pre>
+      <div class="help-block">It is best to use <code>https</code> protocols here as it will allow more flexibility if the need ever arises.</div>
+      <pre class="language-yaml"><code>cdn_custom_js: 'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.js'</code></pre>
     </td>
   </tr>
   <tr>
@@ -1039,15 +696,8 @@ cdn_custom_js:
 cdn_custom_js_min
     </td>
     <td>
-      <div class="help-block">
-Additionally, you can provide the minimized version of the file. It will be
-used instead if site aggregation is enabled.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_custom_js_min:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js'
-
-</code></pre>
+      <div class="help-block">Additionally, you can provide the minimized version of the file. It will be used instead if site aggregation is enabled.</div>
+      <pre class="language-yaml"><code>cdn_custom_js_min: 'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js'</code></pre>
     </td>
   </tr>
   <tr>
@@ -1055,13 +705,8 @@ cdn_custom_js_min:
 cdn_jsdelivr_version
     </td>
     <td>
-      <div class="help-block">
-Choose the Bootstrap version from jsdelivr
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_jsdelivr_version: 3.4.1
-
-</code></pre>
+      <div class="help-block">Choose the Bootstrap version from jsdelivr</div>
+      <pre class="language-yaml"><code>cdn_jsdelivr_version: 3.4.1</code></pre>
     </td>
   </tr>
   <tr>
@@ -1069,14 +714,8 @@ cdn_jsdelivr_version: 3.4.1
 cdn_jsdelivr_theme
     </td>
     <td>
-      <div class="help-block">
-Choose the example Bootstrap Theme provided by Bootstrap or one of the
-Bootswatch themes.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_jsdelivr_theme: bootstrap
-
-</code></pre>
+      <div class="help-block">Choose the example Bootstrap Theme provided by Bootstrap or one of the Bootswatch themes.</div>
+      <pre class="language-yaml"><code>cdn_jsdelivr_theme: bootstrap</code></pre>
     </td>
   </tr>
   </tbody>
@@ -1099,14 +738,8 @@ cdn_jsdelivr_theme: bootstrap
 include_deprecated
     </td>
     <td>
-      <div class="help-block">
-Enabling this setting will include any <code>deprecated.php</code> file
-found in your theme or base themes.
-      </div>
-      <pre class=" language-yaml"><code>
-include_deprecated: 0
-
-</code></pre>
+      <div class="help-block">Enabling this setting will include any <code>deprecated.php</code> file found in your theme or base themes.</div>
+      <pre class="language-yaml"><code>include_deprecated: 0</code></pre>
     </td>
   </tr>
   <tr>
@@ -1114,17 +747,8 @@ include_deprecated: 0
 suppress_deprecated_warnings
     </td>
     <td>
-      <div class="help-block">
-Enable this setting if you wish to suppress deprecated warning messages.
-<strong class='error text-error'>WARNING: Suppressing these messages does
-not &quot;fix&quot; the problem and you will inevitably encounter issues
-when they are removed in future updates. Only use this setting in extreme
-and necessary circumstances.</strong>
-      </div>
-      <pre class=" language-yaml"><code>
-suppress_deprecated_warnings: 0
-
-</code></pre>
+      <div class="help-block">Enable this setting if you wish to suppress deprecated warning messages. <strong class='error text-error'>WARNING: Suppressing these messages does not "fix" the problem and you will inevitably encounter issues when they are removed in future updates. Only use this setting in extreme and necessary circumstances.</strong></div>
+      <pre class="language-yaml"><code>suppress_deprecated_warnings: 0</code></pre>
     </td>
   </tr>
   </tbody>

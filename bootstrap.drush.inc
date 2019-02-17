@@ -107,12 +107,12 @@ function _drush_bootstrap_generate_docs_settings(Theme $bootstrap) {
         $output[] = $definition['id'];
         $output[] = '    </td>';
         $output[] = '    <td>';
-        $output[] = '      <div class="help-block">';
-        $output[] = str_replace('&quote;', '"', wordwrap($definition['description']));
-        $output[] = '      </div>';
-        $output[] = '      <pre class=" language-yaml"><code>';
-        $output[] = wordwrap(Yaml::encode([$definition['id'] => $definition['defaultValue']]));
-        $output[] = '</code></pre>';
+        if ($description = trim(str_replace('&quot;', '"', $definition['description']))) {
+          $output[] = '      <div class="help-block">' . $description . '</div>';
+        }
+        if ($example = trim(Yaml::encode([$definition['id'] => $definition['defaultValue']]))) {
+          $output[] = '      <pre class="language-yaml"><code>' . $example . '</code></pre>';
+        }
         $output[] = '    </td>';
         $output[] = '  </tr>';
       }

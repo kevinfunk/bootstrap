@@ -8,12 +8,11 @@ are instructions on how to create a [Drupal Bootstrap] based sub-theme.
 There are several different variations on how to accomplish this task, but this
 topic will focus on the two primarily and most common ways.
 
-{.alert.alert-warning} **Warning** You should never modify any theme or
-sub-theme that is packaged and released from Drupal.org, such as Drupal
-Bootstrap. If you do, all changes you have made will be lost once that theme is
-updated. Instead, you should create a subtheme from one of the provided
-starterkits (this is considered a best practice). Once you've done that, you
-can override CSS, templates, and theme processing.
+You should never modify any theme or sub-theme that is packaged and released
+from Drupal.org, such as Drupal Bootstrap. If you do, all changes you have made
+will be lost once that theme is updated. Instead, you should create a sub-theme
+from one of the provided starterkits (this is considered a best practice). Once
+you've done that, you can override CSS, templates, and theme processing.
 
 #### Choose a Starterkit {#starterkit}
 
@@ -23,18 +22,18 @@ can override CSS, templates, and theme processing.
   [Bootstrap Framework] [Less] source files and a local [Less] preprocessor.
 - @link sub_theming_sass Sass Starterkit @endlink - uses the
   [Bootstrap Framework] [Sass] source files and a local [Sass] preprocessor.
-  
-{.alert.alert-info} **Note** Using the "CDN Starterkit" is the preferred method
-for loading Bootstrap CSS and JS on simpler sites that do not use a site-wide
-CDN. Using a CDN Provider for loading Bootstrap, however, does mean that it
-depends on a third-party service. There is no obligation or commitment made by
-this project or these third-party CDN services that guarantees up-time or
-quality of service. If you need to customize Bootstrap, you must choose one of
-the Less or Sass Starterkits, compile the source code locally, and disable the
-"CDN Provider" theme setting. Alternatively, you may also choose to enable a
-site-wide CDN implementation for performance reasons.
 
-{.alert.alert-warning} **Warning** All locally compiled versions of Bootstrap
+{.alert.alert-info} **NOTE:** Using the "CDN Starterkit" is the preferred method
+for loading Bootstrap CSS and JS on simpler sites that do not use a site-wide
+CDN. There are advantages and disadvantages to using a CDN Provider and you will
+need to weigh the benefits based on your site's requirements. Using a CDN
+Provider does mean that it depends on a third-party service. There is no
+obligation or commitment made by this project or these third-party CDN services
+that guarantees up-time or quality of service. If you need to customize
+Bootstrap, you must choose one of the Less or Sass Starterkits, compile the
+source code locally, and disable the "CDN Provider" theme setting.
+
+{.alert.alert-warning} **WARNING:** All locally compiled versions of Bootstrap
 will be superseded by any enabled "CDN Provider"; **do not use both**.
 
 Once you've selected one of the above starterkits, here's how to install it:
