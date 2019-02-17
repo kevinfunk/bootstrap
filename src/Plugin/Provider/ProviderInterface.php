@@ -13,6 +13,13 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 interface ProviderInterface extends PluginInspectionInterface, DerivativeInspectionInterface {
 
   /**
+   * The default CDN Provider cache time-to-live (TTL) value (one week).
+   *
+   * @var int
+   */
+  const CACHE_TTL = 604800;
+
+  /**
    * Alters the framework library.
    *
    * @param array $framework
@@ -22,6 +29,14 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
    *   this will automatically be determined based on system configuration.
    */
   public function alterFrameworkLibrary(array &$framework, $min = NULL);
+
+  /**
+   * Retrieves the cache time-to-live (TTL) value.
+   *
+   * @return int
+   *   The cache expire value, in seconds.
+   */
+  public function getCacheTtl();
 
   /**
    * Retrieves the assets from the CDN, if any.
@@ -61,6 +76,21 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
   public function getLabel();
 
   /**
+   * Retrieves any CDN ProviderException objects triggered during discovery.
+   *
+   * Note: this is primarily used as a way to communicate in the UI that
+   * the discovery of the CDN Provider's assets failed.
+   *
+   * @param bool $reset
+   *   Flag indicating whether to remove the Exceptions once they have been
+   *   retrieved.
+   *
+   * @return \Drupal\bootstrap\Plugin\Provider\ProviderException[]
+   *   An array of CDN ProviderException objects, if any.
+   */
+  public function getCdnExceptions($reset = TRUE);
+
+  /**
    * Retrieves the currently set CDN provider theme.
    *
    * @return string
@@ -97,6 +127,11 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
    *   just be an empty array.
    */
   public function getCdnVersions();
+
+  /**
+   * Removes any cached data the CDN Provider may have.
+   */
+  public function resetCache();
 
   /****************************************************************************
    *
@@ -166,7 +201,9 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
    *   TRUE or FALSE
    *
    * @deprecated in 8.x-3.18, will be removed in a future release. There is no
-   *   replacement for this functionality.
+   *   1:1 replacement for this functionality.
+   *
+   * @see \Drupal\bootstrap\Plugin\Provider\ProviderInterface::getCdnExceptions()
    */
   public function hasError();
 

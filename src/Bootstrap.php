@@ -5,13 +5,19 @@ namespace Drupal\bootstrap;
 use Drupal\bootstrap\Plugin\AlterManager;
 use Drupal\bootstrap\Plugin\FormManager;
 use Drupal\bootstrap\Plugin\PreprocessManager;
+use Drupal\bootstrap\Utility\Crypt;
 use Drupal\bootstrap\Utility\Element;
 use Drupal\bootstrap\Utility\Unicode;
-use Drupal\Component\Utility\Html;
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Component\Serialization\Json;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
+use GuzzleHttp\Exception\GuzzleException;
+use GuzzleHttp\Psr7\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * The primary class for the Drupal Bootstrap base theme.
@@ -91,6 +97,13 @@ class Bootstrap {
    * @var string
    */
   const PROJECT_DOCUMENTATION = 'https://drupal-bootstrap.org';
+
+  /**
+   * The project API search URL.
+   *
+   * @var string
+   */
+  const PROJECT_API_SEARCH_URL = self::PROJECT_DOCUMENTATION . '/api/bootstrap/' . self::PROJECT_BRANCH . '/search/@query';
 
   /**
    * The Drupal Bootstrap project page.
@@ -261,11 +274,13 @@ class Bootstrap {
    * @param string $query
    *   The query to search for.
    *
-   * @return string
+   * @return \Drupal\Component\Render\FormattableMarkup
    *   The complete URL to the documentation site.
    */
   public static function apiSearchUrl($query = '') {
-    return self::PROJECT_DOCUMENTATION . '/api/bootstrap/' . self::PROJECT_BRANCH . '/search/' . Html::escape($query);
+    return new FormattableMarkup(self::PROJECT_API_SEARCH_URL, [
+      '@query' => $query,
+    ]);
   }
 
   /**
@@ -362,6 +377,7 @@ class Bootstrap {
           // Danger class.
           t('Delete')->render()             => 'danger',
           t('Remove')->render()             => 'danger',
+          t('Reset')->render()              => 'danger',
           t('Uninstall')->render()          => 'danger',
 
           // Success class.
@@ -417,29 +433,40 @@ class Bootstrap {
   /**
    * Logs and displays a warning about a deprecated function/method being used.
    *
+   * @param string $caller
+   *   Optional. The function or Class::method that should be shown as
+   *   deprecated. If not set, it will be extrapolated automatically from
+   *   the backtrace. This is primarily used when this method is being invoked
+   *   from inside another method that isn't technically deprecated but has to
+   *   support deprecated functionality.
    * @param bool $show_message
    *   Flag indicating whether to show a message to the user. If TRUE, it will
    *   force showing the message. If FALSE, it will only log the message. If
    *   not set, showing the message will be determined by whether the current
    *   theme has suppressed showing deprecated warnings.
    */
-  public static function deprecated($show_message = NULL) {
+  public static function deprecated($caller = NULL, $show_message = NULL) {
     $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
 
     // Extrapolate the caller.
-    $caller = $backtrace[1];
-    $class = '';
-    if (isset($caller['class'])) {
-      $parts = explode('\\', $caller['class']);
-      $class = array_pop($parts) . '::';
+    if (!isset($caller) && !empty($backtrace[1]) && ($info = $backtrace[1])) {
+      $caller = (!empty($info['class']) ? $info['class'] . '::' : '') . $info['function'];
     }
 
-    $message = t('The following function(s) or method(s) have been deprecated, please check the logs for a more detailed backtrace on where these are being invoked. Click on the function or method link to search the documentation site for a possible replacement or solution: <a href=":url" target="_blank">@title</a>', [
-      ':url' => self::apiSearchUrl($class . $caller['function']),
-      '@title' => ($class ? $caller['class'] . '::' : '') . $caller['function'] . '()',
+    // Remove class namespace.
+    $method = FALSE;
+    if (is_string($caller) && strpos($caller, '::') !== FALSE && ($parts = explode('\\', $caller))) {
+      $method = TRUE;
+      $caller = array_pop($parts);
+    }
+
+    $message = t('The following @type has been deprecated: <a href=":url" target="_blank">@title</a>. Please check the logs for a more detailed backtrace on where it is being invoked.', [
+      '@type' => $method ? 'method' : 'function',
+      ':url' => static::apiSearchUrl($caller),
+      '@title' => $caller,
     ]);
 
-    if ($show_message || (!isset($show_message) && !self::getTheme()->getSetting('suppress_deprecated_warnings', FALSE))) {
+    if ($show_message || (!isset($show_message) && !static::getTheme()->getSetting('suppress_deprecated_warnings', FALSE))) {
       drupal_set_message($message, 'warning');
     }
 
@@ -686,6 +713,7 @@ class Bootstrap {
           t('Cancel')->render()     => 'remove',
           t('Delete')->render()     => 'trash',
           t('Remove')->render()     => 'trash',
+          t('Reset')->render()      => 'trash',
           t('Search')->render()     => 'search',
           t('Upload')->render()     => 'upload',
           t('Preview')->render()    => 'eye-open',
@@ -1182,6 +1210,81 @@ class Bootstrap {
         $class->preprocess($variables, $hook, $info);
       }
     }
+  }
+
+  /**
+   * Retrieves a response from a URI, using cached response if available.
+   *
+   * @param string $uri
+   *   The URI to retrieve JSON from.
+   * @param array $options
+   *   The options to pass to the HTTP client.
+   * @param \Exception|null $exception
+   *   The exception thrown if there was an error, passed by reference.
+   *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   A Response object.
+   */
+  public static function cachedRequest($uri, array $options = [], &$exception = NULL) {
+    $options += [
+      'method' => 'GET',
+      'headers' => [
+        'User-Agent' => 'Drupal Bootstrap ' . static::PROJECT_BRANCH . ' (' . static::PROJECT_PAGE . ')',
+      ],
+    ];
+
+    $cache = \Drupal::keyValueExpirable('theme:' . static::getTheme()->getName() . ':http');
+    $key = 'request-' . Crypt::hashBase64(serialize(['uri' => $uri] + $options));
+    $response = $cache->get($key);
+
+    if (!isset($response)) {
+      /** @var \GuzzleHttp\Client $client */
+      $client = \Drupal::service('http_client_factory')->fromOptions($options);
+      $request = new Request($options['method'], $uri, $options['headers']);
+
+      try {
+        $r = $client->send($request, $options);
+        // In order to actually cache the response, the contents must be
+        // extracted from the stream before it's stored in the database.
+        $response = new Response($r->getBody(TRUE)->getContents(), $r->getStatusCode(), $r->getHeaders());
+      }
+      catch (GuzzleException $e) {
+        $exception = $e;
+        $response = new Response($e->getCode() ?: 500, [], $e->getMessage());
+      }
+      catch (\Exception $e) {
+        $exception = $e;
+        $response = new Response($e->getCode() ?: 500, [], $e->getMessage());
+      }
+
+      // Only cache if a maximum age has been detected.
+      if ($response->getStatusCode() == 200 && ($maxAge = $response->getMaxAge())) {
+        $cache->setWithExpire($key, $response, $maxAge);
+      }
+    }
+
+    return $response;
+  }
+
+  /**
+   * Retrieves JSON from a URI.
+   *
+   * @param string $uri
+   *   The URI to retrieve JSON from.
+   * @param array $options
+   *   The options to pass to the HTTP client.
+   * @param \Exception|null $exception
+   *   The exception thrown if there was an error, passed by reference.
+   *
+   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   *   A JsonResponse object.
+   */
+  public static function requestJson($uri, array $options = [], &$exception = NULL) {
+    $r = static::cachedRequest($uri, $options, $exception);
+    $json = Json::decode($r->getContent() ?: '[]') ?: [];
+    $response = new JsonResponse($json, $r->getStatusCode(), $r->headers->all());
+    $response->json = $json;
+    return $response;
   }
 
   /**

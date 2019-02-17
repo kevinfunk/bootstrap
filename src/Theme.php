@@ -64,6 +64,13 @@ class Theme {
   protected $bootstrap;
 
   /**
+   * A list of available CDN Provider instances.
+   *
+   * @var \Drupal\bootstrap\Plugin\Provider\ProviderInterface[]
+   */
+  protected $cdnProviders;
+
+  /**
    * Flag indicating if the theme is in "development" mode.
    *
    * @var bool
@@ -401,6 +408,42 @@ class Theme {
   }
 
   /**
+   * Retrieves the set CDN Provider instance for the theme.
+   *
+   * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface|null
+   *   A CDN Provider instance, NULL if CDN Provider is not set.
+   */
+  public function getCdnProvider() {
+    $provider = $this->getSetting('cdn_provider');
+    $providers = $this->getCdnProviders();
+    return isset($providers[$provider]) ? $providers[$provider] : NULL;
+  }
+
+  /**
+   * Retrieves all available CDN Provider instances.
+   *
+   * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface[]
+   *   All CDN Provider instances.
+   */
+  public function getCdnProviders() {
+    if (!isset($this->cdnProviders)) {
+      $this->cdnProviders = [];
+
+      // Only continue if the theme is Bootstrap based.
+      if ($this->isBootstrap()) {
+        $provider_manager = new ProviderManager($this);
+        foreach (array_keys($provider_manager->getDefinitions()) as $provider) {
+          if ($provider === 'none' || $provider === '_broken') {
+            continue;
+          }
+          $this->cdnProviders[$provider] = $provider_manager->get($provider, ['theme' => $this]);
+        }
+      }
+    }
+    return $this->cdnProviders;
+  }
+
+  /**
    * Retrieves the theme info.
    *
    * @param string $property
@@ -468,44 +511,6 @@ class Theme {
   }
 
   /**
-   * Retrieves the CDN provider.
-   *
-   * @param string $provider
-   *   Optional. A CDN provider name. If not set, defaults to the CDN
-   *   provider set in the theme settings.
-   *
-   * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface|false
-   *   A provider instance or FALSE if no provider is set.
-   */
-  public function getProvider($provider = NULL) {
-    $instance = ProviderManager::load($this, $provider);
-    return $instance instanceof Broken || !$this->isBootstrap() ? FALSE : $instance;
-  }
-
-  /**
-   * Retrieves all CDN providers.
-   *
-   * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface[]
-   *   All provider instances.
-   */
-  public function getProviders() {
-    $providers = [];
-
-    // Only continue if the theme is Bootstrap based.
-    if ($this->isBootstrap()) {
-      $provider_manager = new ProviderManager($this);
-      foreach (array_keys($provider_manager->getDefinitions()) as $provider) {
-        if ($provider === 'none' || $provider === '_broken') {
-          continue;
-        }
-        $providers[$provider] = $provider_manager->get($provider, ['theme' => $this]);
-      }
-    }
-
-    return $providers;
-  }
-
-  /**
    * Retrieves a theme setting.
    *
    * @param string $name
@@ -557,19 +562,6 @@ class Theme {
 
     // Return all setting plugins.
     return $settings;
-  }
-
-  /**
-   * Retrieves the theme's setting plugin instances.
-   *
-   * @return \Drupal\bootstrap\Plugin\Setting\SettingInterface[]
-   *   An associative array of setting objects, keyed by their name.
-   *
-   * @deprecated Will be removed in a future release. Use \Drupal\bootstrap\Theme::getSettingPlugin instead.
-   */
-  public function getSettingPlugins() {
-    Bootstrap::deprecated();
-    return $this->getSettingPlugin();
   }
 
   /**
@@ -758,6 +750,67 @@ class Theme {
    */
   public function subthemeOf($theme) {
     return (string) $theme === $this->getName() || in_array($theme, array_keys(self::getAncestry()));
+  }
+
+  /****************************************************************************
+   *
+   * Deprecated methods
+   *
+   ***************************************************************************/
+
+  /**
+   * Retrieves the CDN provider.
+   *
+   * @param string $provider
+   *   Optional. A CDN provider name. If not set, defaults to the CDN
+   *   provider set in the theme settings.
+   *
+   * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface|false
+   *   A provider instance or FALSE if no provider is set.
+   *
+   * @deprecated in 8.x-3.18, will be removed in a future release.
+   */
+  public function getProvider($provider = NULL) {
+    $instance = ProviderManager::load($this, $provider);
+    return $instance instanceof Broken || !$this->isBootstrap() ? FALSE : $instance;
+  }
+
+  /**
+   * Retrieves all CDN providers.
+   *
+   * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface[]
+   *   All provider instances.
+   *
+   * @deprecated in 8.x-3.18, will be removed in a future release.
+   */
+  public function getProviders() {
+    $providers = [];
+
+    // Only continue if the theme is Bootstrap based.
+    if ($this->isBootstrap()) {
+      $provider_manager = new ProviderManager($this);
+      foreach (array_keys($provider_manager->getDefinitions()) as $provider) {
+        if ($provider === 'none' || $provider === '_broken') {
+          continue;
+        }
+        $providers[$provider] = $provider_manager->get($provider, ['theme' => $this]);
+      }
+    }
+
+    return $providers;
+  }
+
+  /**
+   * Retrieves the theme's setting plugin instances.
+   *
+   * @return \Drupal\bootstrap\Plugin\Setting\SettingInterface[]
+   *   An associative array of setting objects, keyed by their name.
+   *
+   * @deprecated Will be removed in a future release. Use \Drupal\bootstrap\Theme::getSettingPlugin instead.
+   */
+  public function getSettingPlugins() {
+    Bootstrap::deprecated();
+    return $this->getSettingPlugin();
   }
 
 }

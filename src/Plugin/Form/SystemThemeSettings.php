@@ -72,6 +72,7 @@ class SystemThemeSettings extends FormBase implements FormInterface {
       'general' => t('General'),
       'components' => t('Components'),
       'javascript' => t('JavaScript'),
+      'cdn' => t('CDN'),
       'advanced' => t('Advanced'),
     ];
     foreach ($groups as $group => $title) {
@@ -80,7 +81,64 @@ class SystemThemeSettings extends FormBase implements FormInterface {
         '#title' => $title,
         '#group' => 'bootstrap',
       ];
+
+      // Show a button to reset cached HTTP requests.
+      if ($group === 'advanced') {
+        $cache = \Drupal::keyValueExpirable('theme:' . $this->theme->getName() . ':http');
+        $count = count($cache->getAll());
+        $form[$group]['reset_http_request_cache'] = [
+          '#type' => 'item',
+          '#title' => $this->t('Cached HTTP requests: @count', ['@count' => $count]),
+          '#weight' => 100,
+          '#smart_description' => FALSE,
+          '#description' => $this->t('All HTTP requests initiated through the base-theme are cached if there is a "max-age" response header present. These cached requests will persist through cache rebuilds and only expire once the the "max-age" has been reached. If you believe a CDN Provider is not retrieving data properly, you can manually reset this cache here.'),
+          '#description_display' => 'before',
+          '#prefix' => '<div id="reset-http-request-cache">',
+          '#suffix' => '</div>',
+        ];
+
+        $form[$group]['reset_http_request_cache']['submit'] = [
+          '#type' => 'submit',
+          '#value' => $this->t('Reset HTTP Request Cache'),
+          '#prefix' => '<div>',
+          '#suffix' => '</div>',
+          '#submit' => [
+            [get_class($this), 'submitResetHttpRequestCache'],
+          ],
+          '#ajax' => [
+            'callback' => [get_class($this), 'ajaxResetHttpRequestCache'],
+            'wrapper' => 'reset-http-request-cache',
+          ],
+        ];
+      }
     }
+  }
+
+  /**
+   * Submit callback for resetting the cached HTTP requests.
+   *
+   * @param array $form
+   *   Nested array of form elements that comprise the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public static function submitResetHttpRequestCache(array $form, FormStateInterface $form_state) {
+    $form_state->setRebuild();
+    $theme = SystemThemeSettings::getTheme(Element::create($form), $form_state);
+    $cache = \Drupal::keyValueExpirable('theme:' . $theme->getName() . ':http');
+    $cache->deleteAll();
+  }
+
+  /**
+   * AJAX callback for reloading the cached HTTP request markup.
+   *
+   * @param array $form
+   *   Nested array of form elements that comprise the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   */
+  public static function ajaxResetHttpRequestCache(array $form, FormStateInterface $form_state) {
+    return $form['advanced']['reset_http_request_cache'];
   }
 
   /**

@@ -3,8 +3,6 @@
 namespace Drupal\bootstrap\Plugin\Setting\Advanced;
 
 use Drupal\bootstrap\Plugin\Setting\SettingBase;
-use Drupal\bootstrap\Utility\Element;
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * The "suppress_deprecated_warnings" theme setting.
@@ -23,18 +21,4 @@ use Drupal\Core\Form\FormStateInterface;
  *   },
  * )
  */
-class SuppressDeprecatedWarnings extends SettingBase {
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alterFormElement(Element $form, FormStateInterface $form_state, $form_id = NULL) {
-    $setting = $this->getSettingElement($form, $form_state);
-    $setting->setProperty('states', [
-      'visible' => [
-        ':input[name="include_deprecated"]' => ['checked' => TRUE],
-      ],
-    ]);
-  }
-
-}
+class SuppressDeprecatedWarnings extends SettingBase {}

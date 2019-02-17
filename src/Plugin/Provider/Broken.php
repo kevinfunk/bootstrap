@@ -26,8 +26,8 @@ class Broken extends PluginBase implements ProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getAssets($types = NULL) {
-    return [];
+  public function getCacheTtl() {
+    return static::CACHE_TTL;
   }
 
   /**
@@ -40,8 +40,29 @@ class Broken extends PluginBase implements ProviderInterface {
   /**
    * {@inheritdoc}
    */
+  public function getCdnExceptions($reset = TRUE) {
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCdnTheme() {
+    return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function getCdnThemes($version = NULL) {
     return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCdnVersion() {
+    return NULL;
   }
 
   /**
@@ -68,30 +89,15 @@ class Broken extends PluginBase implements ProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCdnTheme() {
-    return NULL;
+  public function resetCache() {
+    // Intentionally left empty.
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getThemes() {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCdnVersion() {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getVersions() {
-    return [];
-  }
+  /****************************************************************************
+   *
+   * Deprecated methods
+   *
+   ***************************************************************************/
 
   /**
    * {@inheritdoc}
@@ -100,6 +106,33 @@ class Broken extends PluginBase implements ProviderInterface {
    */
   public function getApi() {
     return NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @deprecated in 8.x-3.18, will be removed in a future release.
+   */
+  public function getAssets($types = NULL) {
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @deprecated in 8.x-3.18, will be removed in a future release.
+   */
+  public function getThemes() {
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   *
+   * @deprecated in 8.x-3.18, will be removed in a future release.
+   */
+  public function getVersions() {
+    return [];
   }
 
   /**

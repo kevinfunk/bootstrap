@@ -11,7 +11,7 @@
       var $context = $(context);
 
       // General.
-      $context.find('#edit-general').drupalSetSummary(function () {
+      $context.find('[data-drupal-selector="edit-general"]').drupalSetSummary(function () {
         var summary = [];
         // Buttons.
         var size = $context.find('select[name="button_size"] :selected');
@@ -42,7 +42,7 @@
       });
 
       // Components.
-      $context.find('#edit-components').drupalSetSummary(function () {
+      $context.find('[data-drupal-selector="edit-components"]').drupalSetSummary(function () {
         var summary = [];
         // Breadcrumbs.
         var breadcrumb = parseInt($context.find('select[name="breadcrumb"]').val(), 10);
@@ -112,7 +112,7 @@
           });
       });
 
-      $context.find('#edit-javascript').drupalSetSummary(function () {
+      $context.find('[data-drupal-selector="edit-javascript"]').drupalSetSummary(function () {
         var summary = [];
         if ($context.find('input[name="modal_enabled"]').is(':checked')) {
           if ($jQueryUiBridge.is(':checked')) {
@@ -131,13 +131,13 @@
         return summary.join(', ');
       });
 
-      // Advanced.
-      $context.find('#edit-advanced').drupalSetSummary(function () {
+      // CDN.
+      $context.find('[data-drupal-selector="edit-cdn"]').drupalSetSummary(function () {
         var summary = [];
         var $cdnProvider = $context.find('select[name="cdn_provider"] :selected');
         var cdnProvider = $cdnProvider.val();
-        if ($cdnProvider.length && cdnProvider.length) {
-          summary.push(Drupal.t('CDN provider: %provider', { '%provider': $cdnProvider.text() }));
+        if ($cdnProvider.length) {
+          summary.push(Drupal.t('Provider: %provider', { '%provider': $cdnProvider.text() }));
 
           // jsDelivr CDN.
           if (cdnProvider === 'jsdelivr') {
@@ -151,6 +151,21 @@
             }
           }
         }
+        return summary.join(', ');
+      });
+
+
+      // Advanced.
+      $context.find('[data-drupal-selector="edit-advanced"]').drupalSetSummary(function () {
+        var summary = [];
+        var deprecations = [];
+        if ($context.find('input[name="include_deprecated"]').is(':checked')) {
+          deprecations.push(Drupal.t('Included'));
+        }
+        deprecations.push($context.find('input[name="suppress_deprecated_warnings"]').is(':checked') ? Drupal.t('Warnings Suppressed') : Drupal.t('Warnings Shown'));
+        summary.push(Drupal.t('Deprecations: @value', {
+          '@value': deprecations.join(', '),
+        }));
         return summary.join(', ');
       });
     }

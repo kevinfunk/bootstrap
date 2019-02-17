@@ -13,317 +13,6 @@ SETTING_NAME: SETTING_VALUE
 
 ---
 
-### Advanced
-
-<table class="table table-striped table-responsive">
-  <thead>
-    <tr>
-      <th class="col-xs-3">Setting name</th>
-      <th>Description and default value</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td class="col-xs-3">
-include_deprecated
-    </td>
-    <td>
-      <div class="help-block">
-Enabling this setting will include any <code>deprecated.php</code> file
-found in your theme or base themes.
-      </div>
-      <pre class=" language-yaml"><code>
-include_deprecated: 0
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-suppress_deprecated_warnings
-    </td>
-    <td>
-      <div class="help-block">
-Enable this setting if you wish to suppress deprecated warning messages.
-<strong class='error text-error'>WARNING: Suppressing these messages does
-not "fix" the problem and you will inevitably encounter issues
-when they are removed in future updates. Only use this setting in extreme
-and necessary circumstances.</strong>
-      </div>
-      <pre class=" language-yaml"><code>
-suppress_deprecated_warnings: 0
-
-</code></pre>
-    </td>
-  </tr>
-  </tbody>
-</table>
-
----
-
-### Advanced > CDN (Content Delivery Network)
-
-<table class="table table-striped table-responsive">
-  <thead>
-    <tr>
-      <th class="col-xs-3">Setting name</th>
-      <th>Description and default value</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td class="col-xs-3">
-cdn_provider
-    </td>
-    <td>
-      <div class="help-block">
-Choose between jsdelivr or a custom cdn source.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_provider: jsdelivr
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-cdn_custom_css
-    </td>
-    <td>
-      <div class="help-block">
-It is best to use <code>https</code> protocols here as it will allow more
-flexibility if the need ever arises.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_custom_css:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.css'
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-cdn_custom_css_min
-    </td>
-    <td>
-      <div class="help-block">
-Additionally, you can provide the minimized version of the file. It will be
-used instead if site aggregation is enabled.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_custom_css_min:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css'
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-cdn_custom_js
-    </td>
-    <td>
-      <div class="help-block">
-It is best to use <code>https</code> protocols here as it will allow more
-flexibility if the need ever arises.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_custom_js:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.js'
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-cdn_custom_js_min
-    </td>
-    <td>
-      <div class="help-block">
-Additionally, you can provide the minimized version of the file. It will be
-used instead if site aggregation is enabled.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_custom_js_min:
-'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js'
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-cdn_jsdelivr_version
-    </td>
-    <td>
-      <div class="help-block">
-Choose the Bootstrap version from jsdelivr
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_jsdelivr_version: 3.4.1
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-cdn_jsdelivr_theme
-    </td>
-    <td>
-      <div class="help-block">
-Choose the example Bootstrap Theme provided by Bootstrap or one of the
-Bootswatch themes.
-      </div>
-      <pre class=" language-yaml"><code>
-cdn_jsdelivr_theme: bootstrap
-
-</code></pre>
-    </td>
-  </tr>
-  </tbody>
-</table>
-
----
-
-### Components > Breadcrumbs
-
-<table class="table table-striped table-responsive">
-  <thead>
-    <tr>
-      <th class="col-xs-3">Setting name</th>
-      <th>Description and default value</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td class="col-xs-3">
-breadcrumb
-    </td>
-    <td>
-      <div class="help-block">
-Show or hide the Breadcrumbs
-      </div>
-      <pre class=" language-yaml"><code>
-breadcrumb: '1'
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-breadcrumb_home
-    </td>
-    <td>
-      <div class="help-block">
-If your site has a module dedicated to handling breadcrumbs already, ensure
-this setting is enabled.
-      </div>
-      <pre class=" language-yaml"><code>
-breadcrumb_home: 0
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-breadcrumb_title
-    </td>
-    <td>
-      <div class="help-block">
-If your site has a module dedicated to handling breadcrumbs already, ensure
-this setting is disabled.
-      </div>
-      <pre class=" language-yaml"><code>
-breadcrumb_title: 1
-
-</code></pre>
-    </td>
-  </tr>
-  </tbody>
-</table>
-
----
-
-### Components > Navbar
-
-<table class="table table-striped table-responsive">
-  <thead>
-    <tr>
-      <th class="col-xs-3">Setting name</th>
-      <th>Description and default value</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td class="col-xs-3">
-navbar_inverse
-    </td>
-    <td>
-      <div class="help-block">
-Select if you want the inverse navbar style.
-      </div>
-      <pre class=" language-yaml"><code>
-navbar_inverse: 0
-
-</code></pre>
-    </td>
-  </tr>
-  <tr>
-    <td class="col-xs-3">
-navbar_position
-    </td>
-    <td>
-      <div class="help-block">
-Determines where the navbar is positioned on the page.
-      </div>
-      <pre class=" language-yaml"><code>
-navbar_position: ''
-
-</code></pre>
-    </td>
-  </tr>
-  </tbody>
-</table>
-
----
-
-### Components > Region Wells
-
-<table class="table table-striped table-responsive">
-  <thead>
-    <tr>
-      <th class="col-xs-3">Setting name</th>
-      <th>Description and default value</th>
-    </tr>
-  </thead>
-  <tbody>
-  <tr>
-    <td class="col-xs-3">
-region_wells
-    </td>
-    <td>
-      <div class="help-block">
-Enable the <code>.well</code>, <code>.well-sm</code> or
-<code>.well-lg</code> classes for specified regions.
-      </div>
-      <pre class=" language-yaml"><code>
-region_wells:
-  navigation: ''
-  navigation_collapsible: ''
-  header: ''
-  highlighted: ''
-  help: ''
-  content: ''
-  sidebar_first: ''
-  sidebar_second: well
-  footer: ''
-
-</code></pre>
-    </td>
-  </tr>
-  </tbody>
-</table>
-
----
-
 ### General > Buttons
 
 <table class="table table-striped table-responsive">
@@ -634,6 +323,147 @@ areas.
       </div>
       <pre class=" language-yaml"><code>
 table_responsive: -1
+
+</code></pre>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+---
+
+### Components > Breadcrumbs
+
+<table class="table table-striped table-responsive">
+  <thead>
+    <tr>
+      <th class="col-xs-3">Setting name</th>
+      <th>Description and default value</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td class="col-xs-3">
+breadcrumb
+    </td>
+    <td>
+      <div class="help-block">
+Show or hide the Breadcrumbs
+      </div>
+      <pre class=" language-yaml"><code>
+breadcrumb: '1'
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+breadcrumb_home
+    </td>
+    <td>
+      <div class="help-block">
+If your site has a module dedicated to handling breadcrumbs already, ensure
+this setting is enabled.
+      </div>
+      <pre class=" language-yaml"><code>
+breadcrumb_home: 0
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+breadcrumb_title
+    </td>
+    <td>
+      <div class="help-block">
+If your site has a module dedicated to handling breadcrumbs already, ensure
+this setting is disabled.
+      </div>
+      <pre class=" language-yaml"><code>
+breadcrumb_title: 1
+
+</code></pre>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+---
+
+### Components > Navbar
+
+<table class="table table-striped table-responsive">
+  <thead>
+    <tr>
+      <th class="col-xs-3">Setting name</th>
+      <th>Description and default value</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td class="col-xs-3">
+navbar_inverse
+    </td>
+    <td>
+      <div class="help-block">
+Select if you want the inverse navbar style.
+      </div>
+      <pre class=" language-yaml"><code>
+navbar_inverse: 0
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+navbar_position
+    </td>
+    <td>
+      <div class="help-block">
+Determines where the navbar is positioned on the page.
+      </div>
+      <pre class=" language-yaml"><code>
+navbar_position: ''
+
+</code></pre>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+---
+
+### Components > Region Wells
+
+<table class="table table-striped table-responsive">
+  <thead>
+    <tr>
+      <th class="col-xs-3">Setting name</th>
+      <th>Description and default value</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td class="col-xs-3">
+region_wells
+    </td>
+    <td>
+      <div class="help-block">
+Enable the <code>.well</code>, <code>.well-sm</code> or
+<code>.well-lg</code> classes for specified regions.
+      </div>
+      <pre class=" language-yaml"><code>
+region_wells:
+  navigation: ''
+  navigation_collapsible: ''
+  header: ''
+  highlighted: ''
+  help: ''
+  content: ''
+  sidebar_first: ''
+  sidebar_second: well
+  footer: ''
 
 </code></pre>
     </td>
@@ -1123,6 +953,176 @@ How a tooltip is triggered.
       </div>
       <pre class=" language-yaml"><code>
 tooltip_trigger: hover
+
+</code></pre>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+---
+
+### CDN (Content Delivery Network)
+
+<table class="table table-striped table-responsive">
+  <thead>
+    <tr>
+      <th class="col-xs-3">Setting name</th>
+      <th>Description and default value</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td class="col-xs-3">
+cdn_provider
+    </td>
+    <td>
+      <div class="help-block">
+Choose the CDN Provider used to load Bootstrap resources.
+      </div>
+      <pre class=" language-yaml"><code>
+cdn_provider: jsdelivr
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_custom_css
+    </td>
+    <td>
+      <div class="help-block">
+It is best to use <code>https</code> protocols here as it will allow more
+flexibility if the need ever arises.
+      </div>
+      <pre class=" language-yaml"><code>
+cdn_custom_css:
+'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.css'
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_custom_css_min
+    </td>
+    <td>
+      <div class="help-block">
+Additionally, you can provide the minimized version of the file. It will be
+used instead if site aggregation is enabled.
+      </div>
+      <pre class=" language-yaml"><code>
+cdn_custom_css_min:
+'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css'
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_custom_js
+    </td>
+    <td>
+      <div class="help-block">
+It is best to use <code>https</code> protocols here as it will allow more
+flexibility if the need ever arises.
+      </div>
+      <pre class=" language-yaml"><code>
+cdn_custom_js:
+'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.js'
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_custom_js_min
+    </td>
+    <td>
+      <div class="help-block">
+Additionally, you can provide the minimized version of the file. It will be
+used instead if site aggregation is enabled.
+      </div>
+      <pre class=" language-yaml"><code>
+cdn_custom_js_min:
+'https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js'
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_jsdelivr_version
+    </td>
+    <td>
+      <div class="help-block">
+Choose the Bootstrap version from jsdelivr
+      </div>
+      <pre class=" language-yaml"><code>
+cdn_jsdelivr_version: 3.4.1
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_jsdelivr_theme
+    </td>
+    <td>
+      <div class="help-block">
+Choose the example Bootstrap Theme provided by Bootstrap or one of the
+Bootswatch themes.
+      </div>
+      <pre class=" language-yaml"><code>
+cdn_jsdelivr_theme: bootstrap
+
+</code></pre>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+---
+
+### Advanced
+
+<table class="table table-striped table-responsive">
+  <thead>
+    <tr>
+      <th class="col-xs-3">Setting name</th>
+      <th>Description and default value</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td class="col-xs-3">
+include_deprecated
+    </td>
+    <td>
+      <div class="help-block">
+Enabling this setting will include any <code>deprecated.php</code> file
+found in your theme or base themes.
+      </div>
+      <pre class=" language-yaml"><code>
+include_deprecated: 0
+
+</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+suppress_deprecated_warnings
+    </td>
+    <td>
+      <div class="help-block">
+Enable this setting if you wish to suppress deprecated warning messages.
+<strong class='error text-error'>WARNING: Suppressing these messages does
+not &quot;fix&quot; the problem and you will inevitably encounter issues
+when they are removed in future updates. Only use this setting in extreme
+and necessary circumstances.</strong>
+      </div>
+      <pre class=" language-yaml"><code>
+suppress_deprecated_warnings: 0
 
 </code></pre>
     </td>

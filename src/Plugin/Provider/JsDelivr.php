@@ -39,18 +39,11 @@ class JsDelivr extends ProviderBase {
   protected $latestVersion = [];
 
   /**
-   * A list of themes, keyed by NPM package name.
+   * A list of themes, keyed by version.
    *
    * @var array[]
    */
   protected $themes = [];
-
-  /**
-   * A list of versions, keyed by NPM package name.
-   *
-   * @var array[]
-   */
-  protected $versions = [];
 
   /**
    * {@inheritdoc}
@@ -80,7 +73,7 @@ class JsDelivr extends ProviderBase {
       $version = $this->getCdnVersion();
     }
     if (!isset($this->themes[$version])) {
-      $this->themes[$version] = $this->cacheGet('themes.' . Unicode::escapeDelimiter($version), [], function ($themes) use ($version) {
+      $this->themes[$version] = $this->cacheGet('themes', Unicode::escapeDelimiter($version), [], function ($themes) use ($version) {
         foreach (['bootstrap', 'bootswatch'] as $package) {
           $mappedVersion = $this->mapVersion($version, $package);
           $files = $this->requestApiV1($package, $mappedVersion);
@@ -95,10 +88,10 @@ class JsDelivr extends ProviderBase {
   /**
    * {@inheritdoc}
    */
-  public function getCdnVersions($package = 'bootstrap') {
-    if (!isset($this->versions[$package])) {
-      $this->versions[$package] = $this->cacheGet("versions.$package", [], function ($versions) use ($package) {
-        $json = $this->requestApiV1($package) + ['versions' => []];
+  public function getCdnVersions() {
+    if (!isset($this->versions)) {
+      $this->versions = $this->cacheGet('versions', 'bootstrap', [], function ($versions) {
+        $json = $this->requestApiV1('bootstrap') + ['versions' => []];
         foreach ($json['versions'] as $version) {
           // Skip irrelevant versions.
           if (!preg_match('/^' . substr(Bootstrap::FRAMEWORK_VERSION, 0, 1) . '\.\d+\.\d+$/', $version)) {
@@ -109,7 +102,7 @@ class JsDelivr extends ProviderBase {
         return $versions;
       });
     }
-    return $this->versions[$package];
+    return $this->versions;
   }
 
   /**
@@ -270,30 +263,35 @@ class JsDelivr extends ProviderBase {
    *   The JSON data from the API.
    */
   protected function requestApiV1($package, $version = NULL) {
-    $url = static::BASE_API_URL . "/$package";
+    $uri = static::BASE_API_URL . "/$package";
+    $options = [
+//      'collection' => $this->getCacheId(),
+    ];
 
     // If no version was passed, then all versions are returned.
     if (!$version) {
-      return $this->requestJson($url);
+      $response = Bootstrap::requestJson($uri, $options);
+      // If bootstrap JSON could not be returned, provide defaults.
+      if (!$response->json && $this->cdnExceptions && $package === 'bootstrap') {
+        $response->json = ['versions' => [Bootstrap::FRAMEWORK_VERSION]];
+      }
+      return $response->json;
     }
 
-    $json = $this->requestJson("$url@$version/flat");
+    $response = Bootstrap::requestJson("$uri@$version/flat", $options);
 
     // If bootstrap JSON could not be returned, provide defaults.
-    if (!$json && $package === 'bootstrap') {
-      $version = Bootstrap::FRAMEWORK_VERSION;
+    if (!$response->json && $this->cdnExceptions && $package === 'bootstrap') {
       return [
-        'css' => [static::BASE_CDN_URL . "/$package@$version/dist/css/bootstrap.css"],
-        'js' => [static::BASE_CDN_URL . "/$package@$version/dist/js/bootstrap.js"],
-        'min' => [
-          'css' => [static::BASE_CDN_URL . "/$package@$version/dist/css/bootstrap.min.css"],
-          'js' => [static::BASE_CDN_URL . "/$package@$version/dist/js/bootstrap.min.js"],
-        ],
+        '/dist/css/bootstrap.css',
+        '/dist/js/bootstrap.js',
+        '/dist/css/bootstrap.min.css',
+        '/dist/js/bootstrap.min.js',
       ];
     }
 
     // Parse the files from JSON.
-    return $this->parseFiles($json);
+    return $this->parseFiles($response->json);
   }
 
   /**

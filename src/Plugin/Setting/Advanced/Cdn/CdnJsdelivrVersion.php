@@ -21,48 +21,38 @@ use Drupal\Core\Form\FormStateInterface;
  *   description = @Translation("Choose the Bootstrap version from jsdelivr"),
  *   defaultValue = @BootstrapConstant("Drupal\bootstrap\Bootstrap::FRAMEWORK_VERSION"),
  *   groups = {
- *     "advanced" = @Translation("Advanced"),
  *     "cdn" = @Translation("CDN (Content Delivery Network)"),
+ *     "cdn_provider" = false,
  *     "jsdelivr" = false,
  *   },
  * )
  */
-class CdnJsdelivrVersion extends CdnProvider {
+class CdnJsdelivrVersion extends CdnProviderBase {
 
   /**
    * {@inheritdoc}
    */
-  public function alterFormElement(Element $form, FormStateInterface $form_state, $form_id = NULL) {
-    // Add autoload fix to make sure AJAX callbacks work.
-    static::formAutoloadFix($form_state);
-
+  public function buildCdnProviderElement(Element $setting, FormStateInterface $form_state) {
     $plugin_id = Html::cleanCssIdentifier($this->provider->getPluginId());
-    $setting = $this->getSettingElement($form, $form_state);
-    $versions = $this->provider->getCdnVersions();
-
-    $setting->setProperty('options', $versions);
+    $setting->setProperty('options', $this->provider->getCdnVersions());
     $setting->setProperty('ajax', [
-      'callback' => [get_class($this), 'ajaxCallback'],
+      'callback' => [get_class($this), 'ajaxProviderCallback'],
       'wrapper' => 'cdn-provider-' . $plugin_id,
     ]);
 
-    if (!$this->provider->hasError() && !$this->provider->isImported()) {
-      $setting->setProperty('description', t('These versions are automatically populated by the @provider API upon cache clear and newer versions may appear over time. It is highly recommended the version that the site was built with stays at that version. Until a newer version has been properly tested for updatability by the site maintainer, you should not arbitrarily "update" just because there is a newer version. This can cause many inconsistencies and undesired effects with an existing site.', [
+    if ($this->provider->getCdnExceptions(FALSE)) {
+      $setting->setProperty('description', t('Unable to parse the @provider API to determine versions. This version is the default version supplied by the base theme.', [
         '@provider' => $this->provider->getLabel(),
       ]));
     }
-  }
+    else {
+      $setting->setProperty('description', t('These versions are automatically populated by the @provider API. While newer versions may appear over time, it is highly recommended the version that the site was built with stays at that version. Until a newer version has been properly tested for updatability by the site maintainer, you should not arbitrarily "update" just because there is a newer version. This can cause many inconsistencies and undesired effects with an existing site.', [
+        '@provider' => $this->provider->getLabel(),
+      ]));
+    }
 
-  /**
-   * AJAX callback for reloading CDN provider elements.
-   *
-   * @param array $form
-   *   Nested array of form elements that comprise the form.
-   * @param \Drupal\Core\Form\FormStateInterface $form_state
-   *   The current state of the form.
-   */
-  public static function ajaxCallback(array $form, FormStateInterface $form_state) {
-    return $form['advanced']['cdn'][$form_state->getValue('cdn_provider', Bootstrap::getTheme()->getSetting('cdn_provider'))];
+    // Check for any CDN failure(s).
+    $this->checkCdnExceptions();
   }
 
 }

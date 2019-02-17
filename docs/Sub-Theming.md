@@ -18,11 +18,24 @@ can override CSS, templates, and theme processing.
 #### Choose a Starterkit {#starterkit}
 
 - @link sub_theming_cdn CDN Starterkit @endlink - uses the "out-of-the-box"
-  CSS and JavaScript files served by the [jsDelivr CDN].
+  CSS and JavaScript files served by a CDN Provider (like [jsDelivr]).
 - @link sub_theming_less Less Starterkit @endlink - uses the
   [Bootstrap Framework] [Less] source files and a local [Less] preprocessor.
 - @link sub_theming_sass Sass Starterkit @endlink - uses the
   [Bootstrap Framework] [Sass] source files and a local [Sass] preprocessor.
+  
+{.alert.alert-info} **Note** Using the "CDN Starterkit" is the preferred method
+for loading Bootstrap CSS and JS on simpler sites that do not use a site-wide
+CDN. Using a CDN Provider for loading Bootstrap, however, does mean that it
+depends on a third-party service. There is no obligation or commitment made by
+this project or these third-party CDN services that guarantees up-time or
+quality of service. If you need to customize Bootstrap, you must choose one of
+the Less or Sass Starterkits, compile the source code locally, and disable the
+"CDN Provider" theme setting. Alternatively, you may also choose to enable a
+site-wide CDN implementation for performance reasons.
+
+{.alert.alert-warning} **Warning** All locally compiled versions of Bootstrap
+will be superseded by any enabled "CDN Provider"; **do not use both**.
 
 Once you've selected one of the above starterkits, here's how to install it:
 
@@ -62,6 +75,6 @@ to customize.
 
 [Drupal Bootstrap]: https://www.drupal.org/project/bootstrap
 [Bootstrap Framework]: https://getbootstrap.com/docs/3.4/
-[jsDelivr CDN]: http://www.jsdelivr.com
+[jsDelivr]: http://www.jsdelivr.com
 [Less]: http://lesscss.org
 [Sass]: http://sass-lang.com

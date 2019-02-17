@@ -11,8 +11,8 @@ use Drupal\Component\Annotation\Plugin;
  *
  * @see \Drupal\bootstrap\Plugin\ProviderInterface
  * @see \Drupal\bootstrap\Plugin\ProviderManager
- * @see \Drupal\bootstrap\Theme::getProviders()
- * @see \Drupal\bootstrap\Theme::getProvider()
+ * @see \Drupal\bootstrap\Theme::getCdnProviders()
+ * @see \Drupal\bootstrap\Theme::getCdnProvider()
  * @see plugin_api
  *
  * @Annotation

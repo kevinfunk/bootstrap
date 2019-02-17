@@ -671,8 +671,8 @@ function _bootstrap_remove_class($class, array &$element, $property = 'attribute
  * @endcode
  *
  * @see \Drupal\bootstrap\Plugin\ProviderManager
- * @see \Drupal\bootstrap\Theme::getProviders()
- * @see \Drupal\bootstrap\Theme::getProvider()
+ * @see \Drupal\bootstrap\Theme::getCdnProviders()
+ * @see \Drupal\bootstrap\Theme::getCdnProvider()
  */
 function bootstrap_cdn_provider($provider = NULL, $reset = FALSE) {
   Bootstrap::deprecated();
@@ -746,7 +746,20 @@ function bootstrap_element_smart_description(array &$element, array &$target = N
  *
  *   // After.
  *   use Drupal\bootstrap\Plugin\ProviderManager;
- *   $assets = ProviderManager::load($theme, $provider)->getAssets($type);
+ *   $original_type = $type;
+ *   $config = \Drupal::config('system.performance');
+ *   $cdnAssets = ProviderManager::load($theme, $provider)->getCdnAssets();
+ *   $data = [];
+ *   $types = !isset($type) ? ['css', 'js'] : (array) $type;
+ *   foreach ($types as $type) {
+ *     if ($config->get("$type.preprocess") && !empty($cdnAssets['min'][$type])) {
+ *       $data[$type] = $cdnAssets['min'][$type];
+ *     }
+ *     elseif (!empty($data[$type])) {
+ *       $data[$type] = $cdnAssets[$type];
+ *     }
+ *   }
+ *   $assets = is_string($original_type) ? $data[$original_type] : $data;
  * @endcode
  *
  * @see \Drupal\bootstrap\Plugin\Provider\Custom::getAssets()
@@ -757,7 +770,20 @@ function bootstrap_element_smart_description(array &$element, array &$target = N
  */
 function bootstrap_get_cdn_assets($type = NULL, $provider = NULL, $theme = NULL) {
   Bootstrap::deprecated();
-  return ProviderManager::load($theme, $provider)->getAssets($type);
+  $original_type = $type;
+  $assets = [];
+  $config = \Drupal::config('system.performance');
+  $cdnAssets = ProviderManager::load($theme, $provider)->getCdnAssets();
+  $types = !isset($type) ? ['css', 'js'] : (array) $type;
+  foreach ($types as $type) {
+    if ($config->get("$type.preprocess") && !empty($cdnAssets['min'][$type])) {
+      $assets[$type] = $cdnAssets['min'][$type];
+    }
+    elseif (!empty($data[$type])) {
+      $assets[$type] = $cdnAssets[$type];
+    }
+  }
+  return is_string($original_type) ? $assets[$original_type] : $assets;
 }
 
 /**

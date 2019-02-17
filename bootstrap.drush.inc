@@ -69,48 +69,56 @@ function _drush_bootstrap_generate_docs_settings(Theme $bootstrap) {
   $output[] = '```';
 
   // Determine the groups.
-  $groups = [];
+  $groups = [
+    'general' => [],
+    'components' => [],
+    'javascript' => [],
+    'cdn' => [],
+    'advanced' => [],
+  ];
   foreach ($bootstrap->getSettingPlugin() as $setting) {
     // Only get the first two groups (we don't need 3rd, or more, levels).
-    $_groups = array_slice($setting->getGroups(), 0, 2, FALSE);
+    $_groups = array_filter(array_slice($setting->getGroups(), 0, 2, FALSE));
     if (!$_groups) {
       continue;
     }
-    $groups[implode(' > ', $_groups)][] = $setting->getPluginDefinition();
+    $groups[array_keys($_groups)[0]][implode(' > ', $_groups)][] = $setting->getPluginDefinition();
   }
 
   // Generate a table of each group's settings.
-  foreach ($groups as $group => $settings) {
-    $output[] = '';
-    $output[] = '---';
-    $output[] = '';
-    $output[] = "### $group";
-    $output[] = '';
-    $output[] = '<table class="table table-striped table-responsive">';
-    $output[] = '  <thead>';
-    $output[] = '    <tr>';
-    $output[] = '      <th class="col-xs-3">Setting name</th>';
-    $output[] = '      <th>Description and default value</th>';
-    $output[] = '    </tr>';
-    $output[] = '  </thead>';
-    $output[] = '  <tbody>';
-    foreach ($settings as $definition) {
-      $output[] = '  <tr>';
-      $output[] = '    <td class="col-xs-3">';
-      $output[] = $definition['id'];
-      $output[] = '    </td>';
-      $output[] = '    <td>';
-      $output[] = '      <div class="help-block">';
-      $output[] = str_replace('&quote;', '"', wordwrap($definition['description']));
-      $output[] = '      </div>';
-      $output[] = '      <pre class=" language-yaml"><code>';
-      $output[] = wordwrap(Yaml::encode([$definition['id'] => $definition['defaultValue']]));
-      $output[] = '</code></pre>';
-      $output[] = '    </td>';
-      $output[] = '  </tr>';
+  foreach ($groups as $subgroups) {
+    foreach ($subgroups as $group => $settings) {
+      $output[] = '';
+      $output[] = '---';
+      $output[] = '';
+      $output[] = "### $group";
+      $output[] = '';
+      $output[] = '<table class="table table-striped table-responsive">';
+      $output[] = '  <thead>';
+      $output[] = '    <tr>';
+      $output[] = '      <th class="col-xs-3">Setting name</th>';
+      $output[] = '      <th>Description and default value</th>';
+      $output[] = '    </tr>';
+      $output[] = '  </thead>';
+      $output[] = '  <tbody>';
+      foreach ($settings as $definition) {
+        $output[] = '  <tr>';
+        $output[] = '    <td class="col-xs-3">';
+        $output[] = $definition['id'];
+        $output[] = '    </td>';
+        $output[] = '    <td>';
+        $output[] = '      <div class="help-block">';
+        $output[] = str_replace('&quote;', '"', wordwrap($definition['description']));
+        $output[] = '      </div>';
+        $output[] = '      <pre class=" language-yaml"><code>';
+        $output[] = wordwrap(Yaml::encode([$definition['id'] => $definition['defaultValue']]));
+        $output[] = '</code></pre>';
+        $output[] = '    </td>';
+        $output[] = '  </tr>';
+      }
+      $output[] = '  </tbody>';
+      $output[] = '</table>';
     }
-    $output[] = '  </tbody>';
-    $output[] = '</table>';
   }
 
   // Ensure we have link references at the bottom.

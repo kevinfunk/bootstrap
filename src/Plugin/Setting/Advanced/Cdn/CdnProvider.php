@@ -3,10 +3,9 @@
 namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
 
 use Drupal\bootstrap\Bootstrap;
+use Drupal\bootstrap\Plugin\Form\SystemThemeSettings;
 use Drupal\bootstrap\Plugin\Provider\ProviderInterface;
 use Drupal\bootstrap\Plugin\ProviderManager;
-use Drupal\bootstrap\Plugin\Setting\SettingBase;
-use Drupal\bootstrap\Traits\FormAutoloadFixTrait;
 use Drupal\bootstrap\Utility\Element;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
@@ -21,88 +20,68 @@ use Drupal\Core\Form\FormStateInterface;
  *   id = "cdn_provider",
  *   type = "select",
  *   title = @Translation("CDN Provider"),
- *   description = @Translation("Choose between jsdelivr or a custom cdn source."),
+ *   description = @Translation("Choose the CDN Provider used to load Bootstrap resources."),
  *   defaultValue = "jsdelivr",
  *   empty_value = "",
  *   weight = -1,
  *   groups = {
- *     "advanced" = @Translation("Advanced"),
  *     "cdn" = @Translation("CDN (Content Delivery Network)"),
+ *     "cdn_provider" = false,
  *   },
  *   options = { },
  * )
  */
-class CdnProvider extends SettingBase {
-
-  use FormAutoloadFixTrait;
-
-  /**
-   * The current provider.
-   *
-   * @var \Drupal\bootstrap\Plugin\Provider\ProviderInterface
-   */
-  protected $provider;
-
-  /**
-   * The current provider manager instance.
-   *
-   * @var \Drupal\bootstrap\Plugin\ProviderManager
-   */
-  protected $providerManager;
-
-  /**
-   * {@inheritdoc}
-   */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition);
-    $this->providerManager = new ProviderManager($this->theme);
-    $this->provider = $this->providerManager->get(isset($plugin_definition['cdn_provider']) ? $plugin_definition['cdn_provider'] : NULL);
-  }
+class CdnProvider extends CdnProviderBase {
 
   /**
    * {@inheritdoc}
    */
   public function alterFormElement(Element $form, FormStateInterface $form_state, $form_id = NULL) {
-    // Add autoload fix to make sure AJAX callbacks work.
-    static::formAutoloadFix($form_state);
+    parent::alterFormElement($form, $form_state);
 
     // Retrieve the provider from form values or the setting.
     $default_provider = $form_state->getValue('cdn_provider', $this->theme->getSetting('cdn_provider'));
 
+    // Wrap the default group so it can be replaced via AJAX.
     $group = $this->getGroupElement($form, $form_state);
-    $description_label = $this->t('NOTE');
-    $description = $this->t('Using one of the "CDN Provider" options below is the preferred method for loading Bootstrap CSS and JS on simpler sites that do not use a site-wide CDN. Using a "CDN Provider" for loading Bootstrap, however, does mean that it depends on a third-party service. There is no obligation or commitment by these third-parties that guarantees any up-time or service quality. If you need to customize Bootstrap and have chosen to compile the source code locally (served from this site), you must disable the "CDN Provider" option below by choosing "- None -" and alternatively enable a site-wide CDN implementation. All local (served from this site) versions of Bootstrap will be superseded by any enabled "CDN Provider" below. <strong>Do not do both</strong>.');
-    $group->setProperty('description', '<div class="alert alert-info messages warning"><strong>' . $description_label . ':</strong> ' . $description . '</div>');
-    $group->setProperty('open', !!$default_provider);
+    $group->setProperty('prefix', '<div id="cdn-providers">');
+    $group->setProperty('suffix', '</div>');
 
     // Intercept possible manual import of API data via AJAX callback.
     $this->importProviderData($form_state);
 
-    $options = [];
-    foreach ($this->theme->getProviders() as $plugin_id => $provider) {
-      // Skip the broken provider.
-      if ($plugin_id === '_broken') {
-        continue;
-      }
-      $options[$plugin_id] = $provider->getLabel();
-      $this->createProviderGroup($group, $provider);
-    }
-
     // Override the options with the provider manager discovery.
     $setting = $this->getSettingElement($form, $form_state);
-    $setting->setProperty('options', $options);
+    $setting->setProperty('empty_option', $this->t('None (compile locally)'));
+    $providers = $this->theme->getCdnProviders();
+    $setting->setProperty('options', array_map(function (ProviderInterface $provider) {
+      return $provider->getLabel();
+    }, $providers));
+
+    $setting->setProperty('ajax', [
+      'callback' => [get_class($this), 'ajaxProvidersCallback'],
+      'wrapper' => 'cdn-providers',
+    ]);
+
+    if (isset($providers[$default_provider])) {
+      $provider = $providers[$default_provider];
+      $this->createProviderGroup($group, $provider);
+    }
   }
 
   /**
-   * AJAX callback for reloading CDN provider elements.
+   * Submit callback for resetting CDN Provider cache.
    *
    * @param array $form
    *   Nested array of form elements that comprise the form.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  public static function ajaxCallback(array $form, FormStateInterface $form_state) {
-    return $form['advanced']['cdn'][$form_state->getValue('cdn_provider', Bootstrap::getTheme()->getSetting('cdn_provider'))];
+  public static function submitResetProviderCache(array $form, FormStateInterface $form_state) {
+    $form_state->setRebuild();
+    $theme = SystemThemeSettings::getTheme(Element::create($form), $form_state);
+    $provider = ProviderManager::load($theme, $form_state->getValue('cdn_provider', $theme->getSetting('cdn_provider')));
+    $provider->resetCache();
   }
 
   /**
@@ -113,19 +92,14 @@ class CdnProvider extends SettingBase {
    * @param \Drupal\bootstrap\Plugin\Provider\ProviderInterface $provider
    *   The provider instance.
    */
-  private function createProviderGroup(Element $group, ProviderInterface $provider) {
+  protected function createProviderGroup(Element $group, ProviderInterface $provider) {
     $plugin_id = Html::cleanCssIdentifier($provider->getPluginId());
 
     // Create the provider container.
     $group->$plugin_id = [
       '#type' => 'container',
-      '#prefix' => '<div id="cdn-provider-' . $plugin_id . '">',
+      '#prefix' => '<div id="cdn-provider-' . $plugin_id . '" class="form-group">',
       '#suffix' => '</div>',
-      '#states' => [
-        'visible' => [
-          ':input[name="cdn_provider"]' => ['value' => $plugin_id],
-        ],
-      ],
     ];
 
     // Add in the provider description.
@@ -136,9 +110,27 @@ class CdnProvider extends SettingBase {
       ];
     }
 
+    // Add a CDN Provider cache reset button.
+    if ($provider->getPluginId() !== 'custom' && ($reset = $this->buildResetProviderCache($provider))) {
+      $group->$plugin_id->reset = $reset;
+    }
+
+    // To avoid triggering unnecessary deprecation messages, extract these
+    // values from the provider definition directly.
+    // @todo Remove when the deprecated functionality is removed.
+    $definition = $provider->getPluginDefinition();
+    $hasError = !empty($definition['error']);
+    $isImported = !empty($definition['imported']);
+
     // Indicate there was an error retrieving the provider's API data.
-    if ($provider->hasError() || $provider->isImported()) {
-      if ($provider->hasError()) {
+    if ($hasError || $isImported) {
+      if ($isImported) {
+        Bootstrap::deprecated('\Drupal\bootstrap\Plugin\Provider\ProviderInterface::isImported');
+      }
+      if ($hasError) {
+        // Now a deprecation message can be shown as the provider clearly is
+        // using the outdated "process definition" method of providing assets.
+        Bootstrap::deprecated('\Drupal\bootstrap\Plugin\Provider\ProviderInterface::hasError');
         $description_label = $this->t('ERROR');
         $description = $this->t('Unable to reach or parse the data provided by the @title API. Ensure the server this website is hosted on is able to initiate HTTP requests. If the request consistently fails, it is likely that there are certain PHP functions that have been disabled by the hosting provider for security reasons. It is possible to manually copy and paste the contents of the following URL into the "Imported @title data" section below.<br /><br /><a href=":provider_api" target="_blank">:provider_api</a>.', [
           '@title' => $provider->getLabel(),
@@ -178,19 +170,12 @@ class CdnProvider extends SettingBase {
   }
 
   /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags() {
-    return ['library_info'];
-  }
-
-  /**
    * Imports data for a provider that was manually uploaded in theme settings.
    *
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The current state of the form.
    */
-  private function importProviderData(FormStateInterface $form_state) {
+  protected function importProviderData(FormStateInterface $form_state) {
     if ($form_state->getValue('clicked_button') === t('Save provider data')->render()) {
       $provider_path = ProviderManager::FILE_PATH;
       file_prepare_directory($provider_path, FILE_CREATE_DIRECTORY | FILE_MODIFY_PERMISSIONS);
