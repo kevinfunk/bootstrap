@@ -91,7 +91,7 @@ class SystemThemeSettings extends FormBase implements FormInterface {
           '#title' => $this->t('Cached HTTP requests: @count', ['@count' => $count]),
           '#weight' => 100,
           '#smart_description' => FALSE,
-          '#description' => $this->t('All HTTP requests initiated through the base-theme are cached if there is a "max-age" response header present. These cached requests will persist through cache rebuilds and only expire once the the "max-age" has been reached. If you believe a CDN Provider is not retrieving data properly, you can manually reset this cache here.'),
+          '#description' => $this->t('All external HTTP requests initiated by this theme are subject to caching. Cacheability is determined automatically based on a manually passed TTL value by the initiator or if there is a "max-age" response header present. These cached requests will persist through cache rebuilds and will only be requested again once they have expired. If you believe there is some request not being properly retrieved, you can manually reset this cache here.'),
           '#description_display' => 'before',
           '#prefix' => '<div id="reset-http-request-cache">',
           '#suffix' => '</div>',
@@ -100,6 +100,7 @@ class SystemThemeSettings extends FormBase implements FormInterface {
         $form[$group]['reset_http_request_cache']['submit'] = [
           '#type' => 'submit',
           '#value' => $this->t('Reset HTTP Request Cache'),
+          '#description' => $this->t('Note: this will not reset any cached CDN data; see "Advanced Cache" in the "CDN" section.'),
           '#prefix' => '<div>',
           '#suffix' => '</div>',
           '#submit' => [

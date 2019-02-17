@@ -26,8 +26,8 @@ class Broken extends PluginBase implements ProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheTtl() {
-    return static::CACHE_TTL;
+  public function getCacheTtl($type) {
+    return static::TTL_NEVER;
   }
 
   /**

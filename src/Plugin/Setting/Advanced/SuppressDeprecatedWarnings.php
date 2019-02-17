@@ -15,7 +15,7 @@ use Drupal\bootstrap\Plugin\Setting\SettingBase;
  *   weight = -2,
  *   title = @Translation("Suppress deprecated warnings"),
  *   defaultValue = 0,
- *   description = @Translation("Enable this setting if you wish to suppress deprecated warning messages. <strong class='error text-error'>WARNING: Suppressing these messages does not &quot;fix&quot; the problem and you will inevitably encounter issues when they are removed in future updates. Only use this setting in extreme and necessary circumstances.</strong>"),
+ *   description = @Translation("Enable this setting if you wish to suppress deprecated warning messages."),
  *   groups = {
  *     "advanced" = @Translation("Advanced"),
  *   },

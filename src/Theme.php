@@ -759,10 +759,10 @@ class Theme {
    ***************************************************************************/
 
   /**
-   * Retrieves the CDN provider.
+   * Retrieves the CDN Provider.
    *
    * @param string $provider
-   *   Optional. A CDN provider name. If not set, defaults to the CDN
+   *   Optional. A CDN Provider name. If not set, defaults to the CDN
    *   provider set in the theme settings.
    *
    * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface|false
@@ -776,7 +776,7 @@ class Theme {
   }
 
   /**
-   * Retrieves all CDN providers.
+   * Retrieves all CDN Providers.
    *
    * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface[]
    *   All provider instances.

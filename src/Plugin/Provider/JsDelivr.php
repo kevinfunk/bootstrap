@@ -3,10 +3,9 @@
 namespace Drupal\bootstrap\Plugin\Provider;
 
 use Drupal\bootstrap\Bootstrap;
-use Drupal\bootstrap\Utility\Unicode;
 
 /**
- * The "jsdelivr" CDN provider plugin.
+ * The "jsdelivr" CDN Provider plugin.
  *
  * @ingroup plugins_provider
  *
@@ -32,20 +31,6 @@ class JsDelivr extends ProviderBase {
   const BASE_CDN_URL = 'https://cdn.jsdelivr.net/npm';
 
   /**
-   * A list of latest versions, keyed by NPM package name.
-   *
-   * @var string[]
-   */
-  protected $latestVersion = [];
-
-  /**
-   * A list of themes, keyed by version.
-   *
-   * @var array[]
-   */
-  protected $themes = [];
-
-  /**
    * {@inheritdoc}
    */
   public function getDescription() {
@@ -60,7 +45,7 @@ class JsDelivr extends ProviderBase {
   /**
    * {@inheritdoc}
    */
-  protected function discoverCdnAssets($version, $theme = 'bootstrap') {
+  protected function discoverCdnAssets($version, $theme = NULL) {
     $themes = $this->getCdnThemes($version);
     return isset($themes[$theme]) ? $themes[$theme] : [];
   }
@@ -68,41 +53,30 @@ class JsDelivr extends ProviderBase {
   /**
    * {@inheritdoc}
    */
-  public function getCdnThemes($version = NULL) {
-    if (!isset($version)) {
-      $version = $this->getCdnVersion();
+  protected function discoverCdnThemes($version) {
+    $themes = [];
+    foreach (['bootstrap', 'bootswatch'] as $package) {
+      $mappedVersion = $this->mapVersion($version, $package);
+      $files = $this->requestApiV1($package, $mappedVersion, $this->getCacheTtl(static::CACHE_THEMES));
+      $themes = $this->parseThemes($files, $package, $mappedVersion, $themes);
     }
-    if (!isset($this->themes[$version])) {
-      $this->themes[$version] = $this->cacheGet('themes', Unicode::escapeDelimiter($version), [], function ($themes) use ($version) {
-        foreach (['bootstrap', 'bootswatch'] as $package) {
-          $mappedVersion = $this->mapVersion($version, $package);
-          $files = $this->requestApiV1($package, $mappedVersion);
-          $themes = $this->parseThemes($files, $package, $mappedVersion, $themes);
-        }
-        return $themes;
-      });
-    }
-    return $this->themes[$version];
+    return $themes;
   }
 
   /**
    * {@inheritdoc}
    */
-  public function getCdnVersions() {
-    if (!isset($this->versions)) {
-      $this->versions = $this->cacheGet('versions', 'bootstrap', [], function ($versions) {
-        $json = $this->requestApiV1('bootstrap') + ['versions' => []];
-        foreach ($json['versions'] as $version) {
-          // Skip irrelevant versions.
-          if (!preg_match('/^' . substr(Bootstrap::FRAMEWORK_VERSION, 0, 1) . '\.\d+\.\d+$/', $version)) {
-            continue;
-          }
-          $versions[$version] = $version;
-        }
-        return $versions;
-      });
+  protected function discoverCdnVersions() {
+    $versions = [];
+    $json = $this->requestApiV1('bootstrap', NULL, $this->getCacheTtl(static::CACHE_VERSIONS)) + ['versions' => []];
+    foreach ($json['versions'] as $version) {
+      // Skip irrelevant versions.
+      if (!preg_match('/^' . substr(Bootstrap::FRAMEWORK_VERSION, 0, 1) . '\.\d+\.\d+$/', $version)) {
+        continue;
+      }
+      $versions[$version] = $version;
     }
-    return $this->versions;
+    return $versions;
   }
 
   /**
@@ -196,7 +170,7 @@ class JsDelivr extends ProviderBase {
         // Determine the "theme" name.
         if ($path === 'css' || $path === 'js') {
           $theme = 'bootstrap';
-          $title = (string) $this->t('Bootstrap');
+          $title = (string) $this->t('Default');
         }
         else {
           $theme = $path;
@@ -204,7 +178,7 @@ class JsDelivr extends ProviderBase {
         }
         if ($matches[2]) {
           $theme = 'bootstrap_theme';
-          $title = (string) $this->t('Bootstrap Theme');
+          $title = (string) $this->t('Example Theme');
         }
 
         $themes[$theme]['title'] = $title;
@@ -258,30 +232,39 @@ class JsDelivr extends ProviderBase {
    * @param string $version
    *   A specific version of $package to request. If not provided, a list of
    *   available versions will be returned.
+   * @param int $ttl
+   *   Optional. A specific TTL value to use for caching the HTTP request. If
+   *   not set, it will default to whatever is returned by the HTTP request.
    *
    * @return array
    *   The JSON data from the API.
    */
-  protected function requestApiV1($package, $version = NULL) {
+  protected function requestApiV1($package, $version = NULL, $ttl = NULL) {
     $uri = static::BASE_API_URL . "/$package";
-    $options = [
-//      'collection' => $this->getCacheId(),
-    ];
+    $options = [];
+
+    if (isset($ttl)) {
+      $options['ttl'] = $ttl;
+    }
 
     // If no version was passed, then all versions are returned.
     if (!$version) {
-      $response = Bootstrap::requestJson($uri, $options);
+      $response = $this->requestJson($uri, $options);
+      $json = $response->getJson();
+
       // If bootstrap JSON could not be returned, provide defaults.
-      if (!$response->json && $this->cdnExceptions && $package === 'bootstrap') {
-        $response->json = ['versions' => [Bootstrap::FRAMEWORK_VERSION]];
+      if (!$json && $this->cdnExceptions && $package === 'bootstrap') {
+        $json = ['versions' => [Bootstrap::FRAMEWORK_VERSION]];
       }
-      return $response->json;
+
+      return $json;
     }
 
-    $response = Bootstrap::requestJson("$uri@$version/flat", $options);
+    $response = $this->requestJson("$uri@$version/flat", $options);
+    $json = $response->getJson();
 
     // If bootstrap JSON could not be returned, provide defaults.
-    if (!$response->json && $this->cdnExceptions && $package === 'bootstrap') {
+    if (!$json && $this->cdnExceptions && $package === 'bootstrap') {
       return [
         '/dist/css/bootstrap.css',
         '/dist/js/bootstrap.js',
@@ -291,7 +274,7 @@ class JsDelivr extends ProviderBase {
     }
 
     // Parse the files from JSON.
-    return $this->parseFiles($response->json);
+    return $this->parseFiles($json);
   }
 
   /**

@@ -137,19 +137,18 @@
         var $cdnProvider = $context.find('select[name="cdn_provider"] :selected');
         var cdnProvider = $cdnProvider.val();
         if ($cdnProvider.length) {
-          summary.push(Drupal.t('Provider: %provider', { '%provider': $cdnProvider.text() }));
+          var provider = $cdnProvider.text();
 
-          // jsDelivr CDN.
-          if (cdnProvider === 'jsdelivr') {
-            var $jsDelivrVersion = $context.find('select[name="cdn_jsdelivr_version"] :selected');
-            if ($jsDelivrVersion.length && $jsDelivrVersion.val().length) {
-              summary.push($jsDelivrVersion.text());
-            }
-            var $jsDelivrTheme = $context.find('select[name="cdn_jsdelivr_theme"] :selected');
-            if ($jsDelivrTheme.length && $jsDelivrTheme.val() !== 'bootstrap') {
-              summary.push($jsDelivrTheme.text());
+          var $version = $context.find('select[name="cdn_' + cdnProvider + '_version"] :selected');
+          if ($version.length && $version.val().length) {
+            provider += ' - ' + $version.text();
+            var $theme = $context.find('select[name="cdn_' + cdnProvider + '_theme"] :selected');
+            if ($theme.length) {
+              provider += ' (' + $theme.text() + ')';
             }
           }
+
+          summary.push(provider);
         }
         return summary.join(', ');
       });

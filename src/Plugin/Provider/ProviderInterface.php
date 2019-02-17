@@ -13,11 +13,88 @@ use Drupal\Component\Plugin\PluginInspectionInterface;
 interface ProviderInterface extends PluginInspectionInterface, DerivativeInspectionInterface {
 
   /**
-   * The default CDN Provider cache time-to-live (TTL) value (one week).
+   * Defines the "assets" cache type.
+   *
+   * @var string
+   */
+  const CACHE_ASSETS = 'assets';
+
+  /**
+   * Defines the "library" cache type.
+   *
+   * @var string
+   */
+  const CACHE_LIBRARY = 'library';
+
+  /**
+   * Defines the "themes" cache type.
+   *
+   * @var string
+   */
+  const CACHE_THEMES = 'themes';
+
+  /**
+   * Defines the "versions" cache type.
+   *
+   * @var string
+   */
+  const CACHE_VERSIONS = 'versions';
+
+  /**
+   * Defines the "forever" time-to-live (TTL) value.
    *
    * @var int
    */
-  const CACHE_TTL = 604800;
+  const TTL_FOREVER = -1;
+
+  /**
+   * Defines the "never" time-to-live (TTL) value.
+   *
+   * @var int
+   */
+  const TTL_NEVER = 0;
+
+  /**
+   * Defines the "one day" time-to-live (TTL) value.
+   *
+   * @var int
+   */
+  const TTL_ONE_DAY = 86400;
+
+  /**
+   * Defines the "one week" time-to-live (TTL) value.
+   *
+   * @var int
+   */
+  const TTL_ONE_WEEK = 604800;
+
+  /**
+   * Defines the "one month" time-to-live (TTL) value.
+   *
+   * @var int
+   */
+  const TTL_ONE_MONTH = 2630000;
+
+  /**
+   * Defines the "three months" time-to-live (TTL) value.
+   *
+   * @var int
+   */
+  const TTL_THREE_MONTHS = 7776000;
+
+  /**
+   * Defines the "six months" time-to-live (TTL) value.
+   *
+   * @var int
+   */
+  const TTL_SIX_MONTHS = 15780000;
+
+  /**
+   * Defines the "one year" time-to-live (TTL) value.
+   *
+   * @var int
+   */
+  const TTL_ONE_YEAR = 31536000;
 
   /**
    * Alters the framework library.
@@ -33,10 +110,18 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
   /**
    * Retrieves the cache time-to-live (TTL) value.
    *
+   * @param string $type
+   *   The type of cache TTL value. Can be one of the following types:
+   *   - \Drupal\bootstrap\Plugin\Provider\ProviderInterface::CACHE_ASSETS
+   *   - \Drupal\bootstrap\Plugin\Provider\ProviderInterface::CACHE_LIBRARY
+   *   - \Drupal\bootstrap\Plugin\Provider\ProviderInterface::CACHE_THEMES
+   *   - \Drupal\bootstrap\Plugin\Provider\ProviderInterface::CACHE_VERSIONS
+   *   If an invalid type was specified, the resulting TTL value will be 0.
+   *
    * @return int
-   *   The cache expire value, in seconds.
+   *   The cache TTL value, in seconds.
    */
-  public function getCacheTtl();
+  public function getCacheTtl($type);
 
   /**
    * Retrieves the assets from the CDN, if any.
@@ -60,22 +145,6 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
   public function getCdnAssets($version = NULL, $theme = NULL);
 
   /**
-   * Retrieves the provider description.
-   *
-   * @return string
-   *   The provider description.
-   */
-  public function getDescription();
-
-  /**
-   * Retrieves the provider human-readable label.
-   *
-   * @return string
-   *   The provider human-readable label.
-   */
-  public function getLabel();
-
-  /**
    * Retrieves any CDN ProviderException objects triggered during discovery.
    *
    * Note: this is primarily used as a way to communicate in the UI that
@@ -91,42 +160,58 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
   public function getCdnExceptions($reset = TRUE);
 
   /**
-   * Retrieves the currently set CDN provider theme.
+   * Retrieves the currently set CDN Provider theme.
    *
    * @return string
-   *   The currently set CDN provider theme.
+   *   The currently set CDN Provider theme.
    */
   public function getCdnTheme();
 
   /**
-   * Retrieves the themes supported by the CDN provider.
+   * Retrieves the themes supported by the CDN Provider.
    *
    * @param string $version
    *   Optional. A specific version of themes to retrieve. If not set, the
    *   currently set CDN version of the active theme will be used.
    *
    * @return array
-   *   An array of themes. If the CDN provider does not support any it will
+   *   An array of themes. If the CDN Provider does not support any it will
    *   just be an empty array.
    */
   public function getCdnThemes($version = NULL);
 
   /**
-   * Retrieves the currently set CDN provider version.
+   * Retrieves the currently set CDN Provider version.
    *
    * @return string
-   *   The currently set CDN provider version.
+   *   The currently set CDN Provider version.
    */
   public function getCdnVersion();
 
   /**
-   * Retrieves the versions supported by the CDN provider.
+   * Retrieves the versions supported by the CDN Provider.
    *
    * @return array
-   *   An array of versions. If the CDN provider does not support any it will
+   *   An array of versions. If the CDN Provider does not support any it will
    *   just be an empty array.
    */
   public function getCdnVersions();
+
+  /**
+   * Retrieves the provider description.
+   *
+   * @return string
+   *   The provider description.
+   */
+  public function getDescription();
+
+  /**
+   * Retrieves the provider human-readable label.
+   *
+   * @return string
+   *   The provider human-readable label.
+   */
+  public function getLabel();
 
   /**
    * Removes any cached data the CDN Provider may have.
@@ -169,10 +254,10 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
   public function getAssets($types = NULL);
 
   /**
-   * Retrieves the themes supported by the CDN provider.
+   * Retrieves the themes supported by the CDN Provider.
    *
    * @return array
-   *   An array of themes. If the CDN provider does not support any it will
+   *   An array of themes. If the CDN Provider does not support any it will
    *   just be an empty array.
    *
    * @deprecated in 8.x-3.18, will be removed in a future release.
@@ -182,10 +267,10 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
   public function getThemes();
 
   /**
-   * Retrieves the versions supported by the CDN provider.
+   * Retrieves the versions supported by the CDN Provider.
    *
    * @return array
-   *   An array of versions. If the CDN provider does not support any it will
+   *   An array of versions. If the CDN Provider does not support any it will
    *   just be an empty array.
    *
    * @deprecated in 8.x-3.18, will be removed in a future release.

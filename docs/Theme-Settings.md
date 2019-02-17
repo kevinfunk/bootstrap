@@ -714,8 +714,59 @@ cdn_jsdelivr_version
 cdn_jsdelivr_theme
     </td>
     <td>
-      <div class="help-block">Choose the example Bootstrap Theme provided by Bootstrap or one of the Bootswatch themes.</div>
+      <div class="help-block">Choose the Example Theme provided by Bootstrap or one of the Bootswatch themes.</div>
       <pre class="language-yaml"><code>cdn_jsdelivr_theme: bootstrap</code></pre>
+    </td>
+  </tr>
+  </tbody>
+</table>
+
+---
+
+### CDN (Content Delivery Network) > Advanced Cache
+
+<table class="table table-striped table-responsive">
+  <thead>
+    <tr>
+      <th class="col-xs-3">Setting name</th>
+      <th>Description and default value</th>
+    </tr>
+  </thead>
+  <tbody>
+  <tr>
+    <td class="col-xs-3">
+cdn_cache_ttl_versions
+    </td>
+    <td>
+      <div class="help-block">The length of time to cache the CDN verions before requesting them from the API again.</div>
+      <pre class="language-yaml"><code>cdn_cache_ttl_versions: 604800</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_cache_ttl_themes
+    </td>
+    <td>
+      <div class="help-block">The length of time to cache the CDN themes (if applicable) before requesting them from the API again.</div>
+      <pre class="language-yaml"><code>cdn_cache_ttl_themes: 2630000</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_cache_ttl_assets
+    </td>
+    <td>
+      <div class="help-block">The length of time to cache the parsing and processing of CDN assets before rebuilding them again. Note: any change to CDN values automatically triggers a new build.</div>
+      <pre class="language-yaml"><code>cdn_cache_ttl_assets: -1</code></pre>
+    </td>
+  </tr>
+  <tr>
+    <td class="col-xs-3">
+cdn_cache_ttl_library
+    </td>
+    <td>
+      <div class="help-block">The length of time to cache the theme's library alterations before rebuilding them again. Note: any change to CDN values automatically triggers a new build.</div>
+      <pre class="language-yaml"><code>cdn_cache_ttl_library: -1</code></pre>
     </td>
   </tr>
   </tbody>
@@ -747,7 +798,7 @@ include_deprecated
 suppress_deprecated_warnings
     </td>
     <td>
-      <div class="help-block">Enable this setting if you wish to suppress deprecated warning messages. <strong class='error text-error'>WARNING: Suppressing these messages does not "fix" the problem and you will inevitably encounter issues when they are removed in future updates. Only use this setting in extreme and necessary circumstances.</strong></div>
+      <div class="help-block">Enable this setting if you wish to suppress deprecated warning messages.</div>
       <pre class="language-yaml"><code>suppress_deprecated_warnings: 0</code></pre>
     </td>
   </tr>

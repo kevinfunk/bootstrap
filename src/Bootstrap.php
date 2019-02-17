@@ -16,7 +16,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Markup;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -1233,6 +1232,10 @@ class Bootstrap {
       ],
     ];
 
+    // Determine if a custom TTL value was set.
+    $ttl = isset($options['ttl']) ? $options['ttl'] : NULL;
+    unset($options['ttl']);
+
     $cache = \Drupal::keyValueExpirable('theme:' . static::getTheme()->getName() . ':http');
     $key = 'request-' . Crypt::hashBase64(serialize(['uri' => $uri] + $options));
     $response = $cache->get($key);
@@ -1258,7 +1261,7 @@ class Bootstrap {
       }
 
       // Only cache if a maximum age has been detected.
-      if ($response->getStatusCode() == 200 && ($maxAge = $response->getMaxAge())) {
+      if ($response->getStatusCode() == 200 && ($maxAge = isset($ttl) ? $ttl : $response->getMaxAge())) {
         $cache->setWithExpire($key, $response, $maxAge);
       }
     }
@@ -1276,15 +1279,11 @@ class Bootstrap {
    * @param \Exception|null $exception
    *   The exception thrown if there was an error, passed by reference.
    *
-   * @return \Symfony\Component\HttpFoundation\JsonResponse
+   * @return \Drupal\bootstrap\JsonResponse
    *   A JsonResponse object.
    */
   public static function requestJson($uri, array $options = [], &$exception = NULL) {
-    $r = static::cachedRequest($uri, $options, $exception);
-    $json = Json::decode($r->getContent() ?: '[]') ?: [];
-    $response = new JsonResponse($json, $r->getStatusCode(), $r->headers->all());
-    $response->json = $json;
-    return $response;
+    return JsonResponse::createFromResponse(static::cachedRequest($uri, $options, $exception));
   }
 
   /**

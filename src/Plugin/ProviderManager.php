@@ -7,13 +7,13 @@ use Drupal\bootstrap\Theme;
 use Drupal\Component\Plugin\FallbackPluginManagerInterface;
 
 /**
- * Manages discovery and instantiation of Bootstrap CDN providers.
+ * Manages discovery and instantiation of Bootstrap CDN Providers.
  *
  * @ingroup plugins_provider
  */
 class ProviderManager extends PluginManager implements FallbackPluginManagerInterface {
   /**
-   * The base file system path for CDN providers.
+   * The base file system path for CDN Providers.
    *
    * @var string
    */

@@ -3,6 +3,12 @@
 namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
 
 /**
+ * Due to BC reasons, this class cannot be moved.
+ *
+ * @todo Move namespace up one.
+ */
+
+/**
  * The "cdn_custom_css" theme setting.
  *
  * @ingroup plugins_setting

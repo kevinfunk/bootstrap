@@ -2,8 +2,13 @@
 
 namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
 
+/**
+ * Due to BC reasons, this class cannot be moved.
+ *
+ * @todo Move namespace up one.
+ */
+
 use Drupal\bootstrap\Bootstrap;
-use Drupal\bootstrap\Plugin\Provider\ProviderInterface;
 use Drupal\bootstrap\Plugin\ProviderManager;
 use Drupal\bootstrap\Plugin\Setting\SettingBase;
 use Drupal\bootstrap\Traits\FormAutoloadFixTrait;
@@ -22,11 +27,18 @@ abstract class CdnProviderBase extends SettingBase {
   use FormAutoloadFixTrait;
 
   /**
-   * The current provider.
+   * The active provider based on form value or theme setting.
    *
    * @var \Drupal\bootstrap\Plugin\Provider\ProviderInterface
    */
-  protected $provider;
+  protected $activeProvider;
+
+  /**
+   * The setting provider.
+   *
+   * @var \Drupal\bootstrap\Plugin\Provider\ProviderInterface
+   */
+  protected $settingProvider;
 
   /**
    * The current provider manager instance.
@@ -41,7 +53,7 @@ abstract class CdnProviderBase extends SettingBase {
   public function __construct(array $configuration, $plugin_id, $plugin_definition) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->providerManager = new ProviderManager($this->theme);
-    $this->provider = $this->providerManager->get(isset($plugin_definition['cdn_provider']) ? $plugin_definition['cdn_provider'] : NULL);
+    $this->settingProvider = $this->providerManager->get(isset($plugin_definition['cdn_provider']) ? $plugin_definition['cdn_provider'] : NULL);
   }
 
   /**
@@ -50,6 +62,7 @@ abstract class CdnProviderBase extends SettingBase {
   public function alterForm(array &$form, FormStateInterface $form_state, $form_id = NULL) {
     // Add autoload fix to make sure AJAX callbacks work.
     static::formAutoloadFix($form_state);
+    $this->activeProvider = $this->providerManager->get($form_state->getValue('cdn_provider', $this->theme->getSetting('cdn_provider')));
     $this->alterFormElement(Element::create($form), $form_state);
   }
 
@@ -58,8 +71,7 @@ abstract class CdnProviderBase extends SettingBase {
    */
   public function alterFormElement(Element $form, FormStateInterface $form_state, $form_id = NULL) {
     // Immediately return if it's not the provider that should be configured.
-    $default_provider = $form_state->getValue('cdn_provider', $this->theme->getSetting('cdn_provider'));
-    if ($default_provider !== $this->provider->getPluginId()) {
+    if ($this->activeProvider->getPluginId() !== $this->settingProvider->getPluginId()) {
       return;
     }
     $setting = $this->getSettingElement($form, $form_state);
@@ -79,44 +91,7 @@ abstract class CdnProviderBase extends SettingBase {
   }
 
   /**
-   * Builds a reset button for the cache provider.
-   *
-   * @param \Drupal\bootstrap\Plugin\Provider\ProviderInterface $provider
-   *   A CDN Provider instance.
-   *
-   * @return \Drupal\bootstrap\Utility\Element
-   *   The reset element.
-   */
-  protected function buildResetProviderCache(ProviderInterface $provider) {
-    /** @var \Drupal\Core\Datetime\DateFormatterInterface $dateFormatter */
-    $dateFormatter = \Drupal::service('date.formatter');
-    $reset = Element::createStandalone([
-      '#type' => 'item',
-      '#weight' => 100,
-      '#description' => $this->t('All @provider data is cached using a time-based expiration method so it can persist through numerous cache rebuilds. If you believe data is not being retrieved from the API properly, you can manually reset the cache here. Otherwise it will invalidate and be rebuilt automatically after %duration.', [
-        '@provider' => $provider->getLabel(),
-        '%duration' => $dateFormatter->formatInterval($provider->getCacheTtl()),
-      ]),
-    ]);
-
-    $reset->submit = Element::createStandalone([
-      '#type' => 'submit',
-      '#value' => $this->t('Reset @provider Cache', [
-        '@provider' => $provider->getLabel(),
-      ]),
-      '#submit' => [
-        [get_class($this), 'submitResetProviderCache'],
-      ],
-      '#ajax' => [
-        'callback' => [get_class($this), 'ajaxProvidersCallback'],
-        'wrapper' => 'cdn-providers',
-      ],
-    ]);
-    return $reset;
-  }
-
-  /**
-   * AJAX callback for reloading CDN providers.
+   * AJAX callback for reloading CDN Providers.
    *
    * @param array $form
    *   Nested array of form elements that comprise the form.
@@ -128,7 +103,7 @@ abstract class CdnProviderBase extends SettingBase {
   }
 
   /**
-   * AJAX callback for reloading a specific CDN provider.
+   * AJAX callback for reloading a specific CDN Provider.
    *
    * @param array $form
    *   Nested array of form elements that comprise the form.
@@ -150,13 +125,13 @@ abstract class CdnProviderBase extends SettingBase {
    * Handles any CDN Provider exceptions that may have been thrown.
    */
   protected function checkCdnExceptions() {
-    if ($exceptions = $this->provider->getCdnExceptions()) {
+    if ($exceptions = $this->settingProvider->getCdnExceptions()) {
       drupal_set_message($this->t('Unable to parse @provider CDN data. Check the <a href=":logs">logs</a> for more details. If your issues are network related, consider using the "custom" CDN Provider instead to statically set the URLs that should be used.', [
         ':logs' => Url::fromRoute('dblog.overview')->toString(),
-        '@provider' => $this->provider->getLabel(),
+        '@provider' => $this->settingProvider->getLabel(),
       ]), 'error');
       foreach ($exceptions as $exception) {
-        watchdog_exception('bootstrap', $exception);
+        watchdog_exception($this->theme->getName(), $exception);
       }
     }
   }

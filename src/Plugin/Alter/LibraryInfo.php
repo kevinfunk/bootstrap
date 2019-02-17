@@ -35,7 +35,7 @@ class LibraryInfo extends PluginBase implements AlterInterface {
         unset($libraries['livereload']['js']['livereload.js']);
       }
 
-      // Alter the framework library based on currently set CDN provider.
+      // Alter the framework library based on currently set CDN Provider.
       if ($cdnProvider = $this->theme->getCdnProvider()) {
         $cdnProvider->alterFrameworkLibrary($libraries['framework']);
       }

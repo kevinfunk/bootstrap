@@ -2,8 +2,15 @@
 
 namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
 
+/**
+ * Due to BC reasons, this class cannot be moved.
+ *
+ * @todo Move namespace up one.
+ */
+
 use Drupal\bootstrap\Bootstrap;
 use Drupal\bootstrap\Plugin\Form\SystemThemeSettings;
+use Drupal\bootstrap\Plugin\Provider\Broken;
 use Drupal\bootstrap\Plugin\Provider\ProviderInterface;
 use Drupal\bootstrap\Plugin\ProviderManager;
 use Drupal\bootstrap\Utility\Element;
@@ -39,9 +46,6 @@ class CdnProvider extends CdnProviderBase {
   public function alterFormElement(Element $form, FormStateInterface $form_state, $form_id = NULL) {
     parent::alterFormElement($form, $form_state);
 
-    // Retrieve the provider from form values or the setting.
-    $default_provider = $form_state->getValue('cdn_provider', $this->theme->getSetting('cdn_provider'));
-
     // Wrap the default group so it can be replaced via AJAX.
     $group = $this->getGroupElement($form, $form_state);
     $group->setProperty('prefix', '<div id="cdn-providers">');
@@ -63,9 +67,24 @@ class CdnProvider extends CdnProviderBase {
       'wrapper' => 'cdn-providers',
     ]);
 
-    if (isset($providers[$default_provider])) {
-      $provider = $providers[$default_provider];
-      $this->createProviderGroup($group, $provider);
+    $group->cache = [
+      '#type' => 'details',
+      '#title' => $this->t('Advanced Cache'),
+      '#description' => $this->t('All @provider data is intelligently and automatically cached using the various settings below. This allows the @provider data to persist through cache rebuilds. This data will invalidate and rebuild automatically, however a manual reset can be invoked below.', [
+        '@provider' => $this->activeProvider->getPluginId() === 'custom' ? $this->t('CDN Provider') : $this->activeProvider->getLabel(),
+      ]),
+      '#weight' => 1000,
+    ];
+
+    if (!($this->activeProvider instanceof Broken)) {
+      // Add a CDN Provider cache reset button.
+      if ($reset = $this->buildResetProviderCache($this->activeProvider)) {
+        $group->cache->reset = $reset;
+      }
+      $this->createProviderGroup($group, $this->activeProvider);
+    }
+    else {
+      $group->cache['#access'] = FALSE;
     }
   }
 
@@ -105,14 +124,9 @@ class CdnProvider extends CdnProviderBase {
     // Add in the provider description.
     if ($description = $provider->getDescription()) {
       $group->$plugin_id->description = [
-        '#markup' => '<div class="lead">' . $description . '</div>',
+        '#markup' => '<div class="help-block">' . $description . '</div>',
         '#weight' => -99,
       ];
-    }
-
-    // Add a CDN Provider cache reset button.
-    if ($provider->getPluginId() !== 'custom' && ($reset = $this->buildResetProviderCache($provider))) {
-      $group->$plugin_id->reset = $reset;
     }
 
     // To avoid triggering unnecessary deprecation messages, extract these
@@ -167,6 +181,38 @@ class CdnProvider extends CdnProviderBase {
         ],
       ];
     }
+  }
+
+  /**
+   * Builds a reset button for the cache provider.
+   *
+   * @param \Drupal\bootstrap\Plugin\Provider\ProviderInterface $provider
+   *   A CDN Provider instance.
+   *
+   * @return \Drupal\bootstrap\Utility\Element
+   *   The reset element.
+   */
+  protected function buildResetProviderCache(ProviderInterface $provider) {
+    $reset = Element::createStandalone([
+      '#type' => 'item',
+      '#weight' => 100,
+    ]);
+
+    $reset->submit = Element::createStandalone([
+      '#type' => 'submit',
+      '#description' => $this->t('Note: this will not reset any cached HTTP requests; see the "Advanced" section.'),
+      '#value' => $this->t('Reset @provider Cache', [
+        '@provider' => $provider->getLabel(),
+      ]),
+      '#submit' => [
+        [get_class($this), 'submitResetProviderCache'],
+      ],
+      '#ajax' => [
+        'callback' => [get_class($this), 'ajaxProvidersCallback'],
+        'wrapper' => 'cdn-providers',
+      ],
+    ]);
+    return $reset;
   }
 
   /**

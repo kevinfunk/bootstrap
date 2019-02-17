@@ -2,7 +2,12 @@
 
 namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
 
-use Drupal\bootstrap\Bootstrap;
+/**
+ * Due to BC reasons, this class cannot be moved.
+ *
+ * @todo Move namespace up one.
+ */
+
 use Drupal\bootstrap\Utility\Element;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Form\FormStateInterface;
@@ -33,21 +38,22 @@ class CdnJsdelivrVersion extends CdnProviderBase {
    * {@inheritdoc}
    */
   public function buildCdnProviderElement(Element $setting, FormStateInterface $form_state) {
-    $plugin_id = Html::cleanCssIdentifier($this->provider->getPluginId());
-    $setting->setProperty('options', $this->provider->getCdnVersions());
+    $plugin_id = Html::cleanCssIdentifier($this->settingProvider->getPluginId());
+    $setting->setProperty('options', $this->settingProvider->getCdnVersions());
     $setting->setProperty('ajax', [
       'callback' => [get_class($this), 'ajaxProviderCallback'],
       'wrapper' => 'cdn-provider-' . $plugin_id,
     ]);
 
-    if ($this->provider->getCdnExceptions(FALSE)) {
+    $setting->setProperty('smart_description', FALSE);
+    if ($this->settingProvider->getCdnExceptions(FALSE)) {
       $setting->setProperty('description', t('Unable to parse the @provider API to determine versions. This version is the default version supplied by the base theme.', [
-        '@provider' => $this->provider->getLabel(),
+        '@provider' => $this->settingProvider->getLabel(),
       ]));
     }
     else {
-      $setting->setProperty('description', t('These versions are automatically populated by the @provider API. While newer versions may appear over time, it is highly recommended the version that the site was built with stays at that version. Until a newer version has been properly tested for updatability by the site maintainer, you should not arbitrarily "update" just because there is a newer version. This can cause many inconsistencies and undesired effects with an existing site.', [
-        '@provider' => $this->provider->getLabel(),
+      $setting->setProperty('description', t('These versions are automatically populated by the @provider API.', [
+        '@provider' => $this->settingProvider->getLabel(),
       ]));
     }
 
