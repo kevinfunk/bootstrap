@@ -3,13 +3,72 @@
 <!-- @ingroup -->
 # Theme Settings
 
-To override a setting, open `./config/install/THEMENAME.settings.yml` and add the following:
+Drupal 8 introduced the [config system](https://www.drupal.org/documentation/administer/config).
 
-```yaml
-# Settings
+Theme settings have now become quite more complex due to how and where they are
+stored and at what point in the process they are accessed.
 
-SETTING_NAME: SETTING_VALUE
+There are essentially four places where theme settings do or could reside:
+
+1. **Install Config** - `./THEMENAME/config/install/THEMENAME.settings.yml`  
+   This is the install config only. They will only be set upon the initial
+   installation of a theme. This is **not** like previous Drupal implementations
+   where changes made here are reflected after a cache rebuild. The only way
+   to make changes made to this file be used after a theme has been installed
+   is to completely uninstall and reinstall the theme. To supply default values
+   when a theme is installed, create the file named above and add the following:
+   ```yaml
+   # Install settings (these are only set once). 
+   
+   SETTING_NAME: SETTING_VALUE
+   ```
+2. **Exported Config** - `./CONFIG_DIR/THEMENAME.settings.yml`  
+   This is where theme settings are exported. The `CONFIG_DIR` is usually a
+   directory located either just inside or outside the `DOCROOT` of the site.
+   You can read more about this in the link above. This file is automatically
+   generated; **DO NOT EDIT MANUALLY**.
+3. **Active Config** - `(Database)`  
+   Located in both the `config` and `cache_config` tables there will be an entry
+   named `THEMENAME.settings`. This is where the "active" config is stored.
+   These database entries are automatically generated; **DO NOT EDIT MANUALLY**.
+4. **Overridden Config** - `./DOCROOT/sites/default/settings[.local].php`  
+   This is your site's `settings[.local].php` file. Despite its path/filename,
+   anything stored in the `$config` variable does not supply default values.
+   These values actually override any exported or active config. While it is
+   technically possible to specify your config based theme settings here, it is
+   important to remember that this file's main purpose is to supply
+   environmental specific `$database` and `$settings` values (e.g. local,
+   stage, prod, etc.); not config. Its use to store config based theme settings
+   of any kind here is highly discouraged and not supported by this project.
+   While not an exception, it is important to note that this base-theme does
+   support various theme specific `$settings` values, which are not the same as
+   or to be confused with the config based theme settings (read more below).
+   
+If you are migrating from older versions of Drupal and need help wrapping your
+head around the config paradigm shift, think of "Active Config" as the new
+".info" file, but specifically for your theme's settings. Because this is config
+though, you don't edit it manually. Instead, you should navigate to your theme's
+settings UI in the browser, make and save the desired changes, and then export
+your config. Your new theme settings will appear in the exported config
+directory.
+
+If you need to programmatically access or modify a theme's settings, it's best
+to use this base-theme's APIs. To retrieve a theme setting, use:
+\Drupal\bootstrap\Theme::getSetting(). To set a theme setting, use:
+\Drupal\bootstrap\Theme::setSetting():
+
+```php
+<?php
+use Drupal\bootstrap\Bootstrap;
+$theme = Bootstrap::getTheme('THEMENAME');
+
+// Retrieve a theme setting.
+$theme->getSetting('my_setting', 'a default value');
+
+// Set a theme setting (saved to config automatically).
+$theme->setSetting('my_setting', 'a new value');
 ```
+<!-- THEME SETTINGS GENERATION START -->
 
 ---
 
@@ -804,6 +863,92 @@ suppress_deprecated_warnings
   </tr>
   </tbody>
 </table>
+<!-- THEME SETTINGS GENERATION END -->
+
+### Environmental Theme Settings
+
+These settings are not config based and cannot be set via the UI. They can
+only be set in your site's `settings[.local].php` file. They are intended to be
+used only for local development purposes:
+
+
+#### Development Mode
+
+This indicates that theme is in "development" mode:
+
+```php
+<?php
+$settings['theme.dev'] = TRUE;
+```
+
+While this setting doesn't really do much on its own, its primary function is
+intended to help with sub-theming. This adds variables that can be accessed
+elsewhere in your code:
+
+**PHP**
+```php
+<?php
+use Drupal\bootstrap\Bootstrap; 
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function THEMENAME_preprocess_page(&$variables) {
+  // Preprocess hooks already have this in the "theme" array.
+  // This is also passed to the Twig template (see below).
+  if ($variables['theme']['dev']) {
+    // Do something here.
+  }
+}
+
+/**
+ * Implements hook_js_settings_alter().
+ */
+function THEMENAME_js_settings_alter(array &$settings, AttachedAssetsInterface $assets) {
+  // In other procedural functions, use the Bootstrap helper method to retrieve
+  // the theme and then access the method there.
+  $theme = Bootstrap::getTheme(); 
+  if ($theme->isDev()) {
+    // Do something here.
+  }
+}
+```
+
+In Drupal Bootstrap based plugins, there is a `theme` property already in the
+plugin instance that can be accessed (e.g. `$this->theme->isDev()`).
+
+**Twig**
+```twig
+{% if theme.dev %}
+  {# Do something here. #}
+{% endif %}
+```
+
+**JavaScript**
+```js
+var theme = drupalSettings['THEMENAME'] || {};
+if (theme.dev) {
+  // Do something here.
+}
+```
+
+
+#### Livereload
+
+This automatically adds livereload to the page. Supply one of the following:
+
+```php
+<?php
+// Enable default value: //127.0.0.1:35729/livereload.js.
+$settings['theme.livereload'] = TRUE;
+
+// Or, set just the port number: //127.0.0.1:12345/livereload.js.
+$settings['theme.livereload'] = 12345;
+
+// Or, Set an explicit URL.
+$settings['theme.livereload'] = '//127.0.0.1:35729/livereload.js';
+```
+
 
 [Drupal Bootstrap]: https://www.drupal.org/project/bootstrap
 [Bootstrap Framework]: https://getbootstrap.com/docs/3.4/

@@ -55,18 +55,13 @@ function drush_bootstrap_generate_docs($type = 'all') {
  *   The theme instance of the Drupal Bootstrap base theme.
  */
 function _drush_bootstrap_generate_docs_settings(Theme $bootstrap) {
-  $output[] = '<!-- @file Overview of theme settings for Drupal Bootstrap based themes. -->';
-  $output[] = '<!-- @defgroup -->';
-  $output[] = '<!-- @ingroup -->';
-  $output[] = '# Theme Settings';
-  $output[] = '';
-  $output[] = 'To override a setting, open `./config/install/THEMENAME.settings.yml` and add the following:';
-  $output[] = '';
-  $output[] = '```yaml';
-  $output[] = '# Settings';
-  $output[] = '';
-  $output[] = 'SETTING_NAME: SETTING_VALUE';
-  $output[] = '```';
+  $filename = realpath($bootstrap->getPath() . '/docs/Theme-Settings.md');
+  $marker_start = "<!-- THEME SETTINGS GENERATION START -->";
+  $marker_end = "<!-- THEME SETTINGS GENERATION END -->\n";
+  $contents = @file_get_contents($filename) ?: '';
+  $parts = @preg_split('/' . preg_quote($marker_start, '/') . '|' . preg_quote($marker_end, '/') . '/', $contents) ?: [];
+  $start = isset($parts[0]) ? [trim($parts[0])] : [];
+  $end = isset($parts[2]) ? [trim($parts[2])] : [];
 
   // Determine the groups.
   $groups = [
@@ -86,47 +81,46 @@ function _drush_bootstrap_generate_docs_settings(Theme $bootstrap) {
   }
 
   // Generate a table of each group's settings.
+  $lines = [$marker_start];
   foreach ($groups as $subgroups) {
     foreach ($subgroups as $group => $settings) {
-      $output[] = '';
-      $output[] = '---';
-      $output[] = '';
-      $output[] = "### $group";
-      $output[] = '';
-      $output[] = '<table class="table table-striped table-responsive">';
-      $output[] = '  <thead>';
-      $output[] = '    <tr>';
-      $output[] = '      <th class="col-xs-3">Setting name</th>';
-      $output[] = '      <th>Description and default value</th>';
-      $output[] = '    </tr>';
-      $output[] = '  </thead>';
-      $output[] = '  <tbody>';
+      $lines[] = '';
+      $lines[] = '---';
+      $lines[] = '';
+      $lines[] = "### $group";
+      $lines[] = '';
+      $lines[] = '<table class="table table-striped table-responsive">';
+      $lines[] = '  <thead>';
+      $lines[] = '    <tr>';
+      $lines[] = '      <th class="col-xs-3">Setting name</th>';
+      $lines[] = '      <th>Description and default value</th>';
+      $lines[] = '    </tr>';
+      $lines[] = '  </thead>';
+      $lines[] = '  <tbody>';
       foreach ($settings as $definition) {
-        $output[] = '  <tr>';
-        $output[] = '    <td class="col-xs-3">';
-        $output[] = $definition['id'];
-        $output[] = '    </td>';
-        $output[] = '    <td>';
+        $lines[] = '  <tr>';
+        $lines[] = '    <td class="col-xs-3">';
+        $lines[] = $definition['id'];
+        $lines[] = '    </td>';
+        $lines[] = '    <td>';
         if ($description = trim(str_replace('&quot;', '"', $definition['description']))) {
-          $output[] = '      <div class="help-block">' . $description . '</div>';
+          $lines[] = '      <div class="help-block">' . $description . '</div>';
         }
         if ($example = trim(Yaml::encode([$definition['id'] => $definition['defaultValue']]))) {
-          $output[] = '      <pre class="language-yaml"><code>' . $example . '</code></pre>';
+          $lines[] = '      <pre class="language-yaml"><code>' . $example . '</code></pre>';
         }
-        $output[] = '    </td>';
-        $output[] = '  </tr>';
+        $lines[] = '    </td>';
+        $lines[] = '  </tr>';
       }
-      $output[] = '  </tbody>';
-      $output[] = '</table>';
+      $lines[] = '  </tbody>';
+      $lines[] = '</table>';
     }
   }
+  $lines[] = $marker_end;
 
   // Ensure we have link references at the bottom.
-  $output[] = '';
-  $output[] = '[Drupal Bootstrap]: https://www.drupal.org/project/bootstrap';
-  $output[] = '[Bootstrap Framework]: https://getbootstrap.com/docs/3.4/';
-  $output[] = '';
+  $output = implode("\n", array_merge($start, $lines, $end)) . "\n";
 
   // Save the generated output to the appropriate file.
-  return file_put_contents(realpath($bootstrap->getPath() . '/docs/Theme-Settings.md'), implode("\n", $output)) !== FALSE;
+  return file_put_contents($filename, $output) !== FALSE;
 }
