@@ -2,6 +2,9 @@
 
 namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
 
+use Drupal\bootstrap\Plugin\Provider\ProviderInterface;
+use Drupal\Core\Form\FormStateInterface;
+
 /**
  * Due to BC reasons, this class cannot be moved.
  *
@@ -27,4 +30,13 @@ namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
  *   },
  * )
  */
-class CdnCacheTtlAssets extends CdnCacheTtlBase {}
+class CdnCacheTtlAssets extends CdnCacheTtlBase {
+
+  /**
+   * {@inheritdoc}
+   */
+  protected function getSettingValue(FormStateInterface $form_state) {
+    return $this->getProvider()->getCacheTtl(ProviderInterface::CACHE_ASSETS);
+  }
+
+}

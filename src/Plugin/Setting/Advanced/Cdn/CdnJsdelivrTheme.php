@@ -8,13 +8,10 @@ namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
  * @todo Move namespace up one.
  */
 
-use Drupal\bootstrap\Utility\Element;
-use Drupal\Core\Form\FormStateInterface;
+use Drupal\bootstrap\Plugin\Setting\DeprecatedSettingInterface;
 
 /**
  * The "cdn_jsdelivr_theme" theme setting.
- *
- * @ingroup plugins_setting
  *
  * @BootstrapSetting(
  *   cdn_provider = "jsdelivr",
@@ -31,38 +28,40 @@ use Drupal\Core\Form\FormStateInterface;
  *     "jsdelivr" = false,
  *   },
  * )
+ *
+ * @deprecated since 8.x-3.18. Replaced with new setting. Will be removed in a
+ *   future release.
+ *
+ * @see \Drupal\bootstrap\Plugin\Setting\Advanced\Cdn\CdnTheme
  */
-class CdnJsdelivrTheme extends CdnProviderBase {
+class CdnJsdelivrTheme extends CdnProviderBase implements DeprecatedSettingInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function buildCdnProviderElement(Element $setting, FormStateInterface $form_state) {
-    $version = $form_state->getValue('cdn_jsdelivr_version', $this->theme->getSetting('cdn_jsdelivr_version'));
-    $themes = $this->settingProvider->getCdnThemes($version);
+  public function getDeprecatedReason() {
+    return $this->t('Replaced with new setting. Will be removed in a future release.');
+  }
 
-    $options = [];
-    foreach ($themes as $theme => $data) {
-      $options[$theme] = $data['title'];
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedReplacement() {
+    return '\Drupal\bootstrap\Plugin\Setting\Advanced\Cdn\CdnTheme';
+  }
 
-    $setting->setProperty('options', $options);
-    $setting->setProperty('suffix', '<div id="bootstrap-theme-preview"></div>');
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedReplacementSetting() {
+    return $this->theme->getSettingPlugin('cdn_theme');
+  }
 
-    if ($this->settingProvider->getCdnExceptions(FALSE)) {
-      $setting->setProperty('description', t('Unable to parse the @provider API to determine themes. This theme is simply the default CSS supplied by the framework.', [
-        '@provider' => $this->settingProvider->getLabel(),
-      ]));
-    }
-    else {
-      $setting->setProperty('description', t('Choose the <a href=":bootstrap_theme" target="_blank">Example Theme</a> provided by Bootstrap or one of the many, many <a href=":bootswatch" target="_blank">Bootswatch</a> themes!', [
-        ':bootswatch' => 'https://bootswatch.com/3/',
-        ':bootstrap_theme' => 'https://getbootstrap.com/docs/3.4/examples/theme/',
-      ]));
-    }
-
-    // Check for any CDN failure(s).
-    $this->checkCdnExceptions();
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedVersion() {
+    return '8.x-3.18';
   }
 
 }

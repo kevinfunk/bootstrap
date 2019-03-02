@@ -17,7 +17,7 @@ use Drupal\Core\Form\FormStateInterface;
  *
  * @ingroup plugins_setting
  */
-class CdnCacheTtlBase extends CdnProviderBase {
+abstract class CdnCacheTtlBase extends CdnProviderBase {
 
   /**
    * The DateFormatter service.
@@ -39,17 +39,24 @@ class CdnCacheTtlBase extends CdnProviderBase {
   public function alterFormElement(Element $form, FormStateInterface $form_state, $form_id = NULL) {
     $setting = $this->getSettingElement($form, $form_state);
     $setting->setProperty('options', $this->getTtlOptions());
-    $setting->setProperty('access', $this->getSettingAccess());
+
+    // @todo This really shouldn't be here, but there isn't a great way of
+    // setting this from the provider.
+    if ($this->provider->getPluginId() === 'custom') {
+      $setting->setProperty('disabled', TRUE);
+      $setting->setProperty('description', '');
+      $group = $this->getGroupElement($form, $form_state);
+      $group->setProperty('description', $this->t('All caching is forced to "Forever" when using the "Custom" CDN Provider. This is because the provided Custom URLs above are used as part of the cache identifier. Anytime the above Custom URLs are modified, all of the caches are rebuilt automatically.'));
+    }
   }
 
   /**
-   * Retrieves the access value for the setting.
-   *
-   * @return bool
-   *   TRUE or FALSE
+   * {@inheritdoc}
    */
-  protected function getSettingAccess() {
-    return TRUE;
+  public function autoCreateFormElement() {
+    // Don't auto create these; they are created as part of CDN Provider.
+    // @see \Drupal\bootstrap\Plugin\Setting\Advanced\Cdn\CdnProvider::alterFormElement()
+    return FALSE;
   }
 
   /**

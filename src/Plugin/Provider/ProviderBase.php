@@ -5,7 +5,6 @@ namespace Drupal\bootstrap\Plugin\Provider;
 use Drupal\bootstrap\Bootstrap;
 use Drupal\bootstrap\Plugin\PluginBase;
 use Drupal\bootstrap\Plugin\ProviderManager;
-use Drupal\bootstrap\Theme;
 use Drupal\bootstrap\Utility\Crypt;
 use Drupal\bootstrap\Utility\Unicode;
 use Drupal\Component\Serialization\Json;
@@ -51,9 +50,9 @@ class ProviderBase extends PluginBase implements ProviderInterface {
   protected $cacheTtl = [];
 
   /**
-   * The currently set CDN assets.
+   * The currently set CDN assets, keyed by a hash identifier.
    *
-   * @var array
+   * @var \Drupal\bootstrap\Plugin\Provider\CdnAssets[]
    */
   protected $cdnAssets;
 
@@ -81,62 +80,34 @@ class ProviderBase extends PluginBase implements ProviderInterface {
   /**
    * Adds a new CDN Provider exception.
    *
-   * @param string|\Exception $message
+   * @param \Throwable $exception
    *   The exception message.
    */
-  protected function addCdnException($message) {
-    if ($message instanceof \Throwable) {
-      $this->cdnExceptions[] = new ProviderException($this, $message->getMessage(), $message->getCode(), $message);
-    }
-    else {
-      $this->cdnExceptions[] = new ProviderException($this, $message);
-    }
+  protected function addCdnException(\Throwable $exception) {
+    $this->cdnExceptions[] = new ProviderException($this, $exception->getMessage(), $exception->getCode(), $exception);
   }
 
   /**
    * {@inheritdoc}
+   *
+   * @see \Drupal\bootstrap\Plugin\Provider\ProviderBase::getCdnAssetsCacheData()
    */
-  public function alterFrameworkLibrary(array &$framework, $min = NULL) {
+  public function alterFrameworkLibrary(array &$framework) {
     // Attempt to retrieve cached CDN assets from the database. This is
     // primarily used to avoid unnecessary API requests and speed up the
     // process during a cache rebuild. The "keyvalue.expirable" service is
     // used as it persists through cache rebuilds. In order to prevent stale
-    // data, a hash is used constructed of various CDN and preprocess settings.
-    // The cache is rebuilt after it has expired, one week by default, based on
-    // the "cdn_cache_ttl" theme setting.
+    // data, a hash is used constructed of various data relating to the CDN.
+    // The cache is rebuilt if and when it has expired.
     // @see https://www.drupal.org/project/bootstrap/issues/3031415
-    $cdn = [
-      'ttl' => $this->getCacheTtl(static::CACHE_LIBRARY),
-      'min' => [
-        'css' => !!(isset($min) ? $min : \Drupal::config('system.performance')->get('css.preprocess')),
-        'js' => !!(isset($min) ? $min : \Drupal::config('system.performance')->get('js.preprocess')),
-      ],
-      'provider' => $this->pluginId,
-      'theme' => $this->getCdnTheme(),
-      'version' => $this->getCdnVersion(),
-    ];
-
-    // Construct a hash identifier based on the above CDN Provider values.
-    $hash = Crypt::hashBase64(serialize($cdn));
+    $data = $this->getCdnAssetsCacheData();
+    $hash = Crypt::generateBase64HashIdentifier($data);
 
     // Retrieve the cached value or build it if necessary.
-    $assets = $this->cacheGet('library', $hash, [], function ($assets) use ($cdn) {
-      // Iterate over each type.
-      $cdnAssets = $this->getCdnAssets($cdn['version'], $cdn['theme']);
-      foreach (['css', 'js'] as $type) {
-        $files = !empty($cdn['min'][$type]) && isset($cdnAssets['min'][$type]) ? $cdnAssets['min'][$type] : (isset($cdnAssets[$type]) ? $cdnAssets[$type] : []);
-        foreach ($files as $asset) {
-          $data = ['data' => $asset, 'type' => 'external'];
-          // CSS library assets use "SMACSS" categorization, assign to "base".
-          if ($type === 'css') {
-            $assets[$type]['base'][$asset] = $data;
-          }
-          else {
-            $assets[$type][$asset] = $data;
-          }
-        }
-      }
-      return $assets;
+    $assets = $this->cacheGet('library', $hash, [], function () use ($data) {
+      $version = isset($data['version']) ? $data['version'] : NULL;
+      $theme = isset($data['theme']) ? $data['theme'] : NULL;
+      return $this->getCdnAssets($version, $theme)->toLibraryArray($data['min']);
     });
 
     // Immediately return if there are no theme CDN assets to use.
@@ -145,7 +116,9 @@ class ProviderBase extends PluginBase implements ProviderInterface {
     }
 
     // Override the framework version with the CDN version that is being used.
-    $framework['version'] = $cdn['version'];
+    if (isset($data['version'])) {
+      $framework['version'] = $data['version'];
+    }
 
     // Merge the assets into the library info.
     $framework = NestedArray::mergeDeepArray([$assets, $framework], TRUE);
@@ -233,17 +206,28 @@ class ProviderBase extends PluginBase implements ProviderInterface {
    * @param string $theme
    *   A specific set of themed assets to return, if any.
    *
-   * @return array
-   *   An associative array containing the following keys, if there were
-   *   matching files found:
-   *   - css
-   *   - js
-   *   - min:
-   *     - css
-   *     - js
+   * @return \Drupal\bootstrap\Plugin\Provider\CdnAssets
+   *   A CdnAssets object.
    */
   protected function discoverCdnAssets($version, $theme = NULL) {
-    return $this->getAssets();
+    $assets = [];
+
+    // Convert the deprecated array structure into a proper CdnAssets object.
+    $data = $this->getAssets();
+    foreach (['css', 'js'] as $type) {
+      if (isset($data[$type])) {
+        foreach ($data[$type] as $file) {
+          $assets[] = new CdnAsset($file, NULL, $version);
+        }
+      }
+      if (isset($data['min'][$type])) {
+        foreach ($data['min'][$type] as $file) {
+          $assets[] = new CdnAsset($file, NULL, $version);
+        }
+      }
+    }
+
+    return new CdnAssets($assets);
   }
 
   /**
@@ -255,9 +239,10 @@ class ProviderBase extends PluginBase implements ProviderInterface {
    * @param string $version
    *   A specific version of themes to retrieve.
    *
-   * @return array
-   *   An array of themes. If the CDN Provider does not support any it should
-   *   return an empty array.
+   * @return array|false
+   *   An associative array of theme data, similar to what is returned in
+   *   \Drupal\bootstrap\Plugin\Provider\ProviderBase::discoverCdnAssets(), but
+   *   keyed by the theme name.
    */
   protected function discoverCdnThemes($version) {
     return [];
@@ -269,12 +254,191 @@ class ProviderBase extends PluginBase implements ProviderInterface {
    * CDN Providers should sub-class this method to make requests and/or process
    * any necessary data.
    *
-   * @return array
-   *   An array of versions. If the CDN Provider does not support any it should
-   *   return an empty array.
+   * @return array|false
+   *   An associative array of versions, also keyed by the version.
    */
   protected function discoverCdnVersions() {
     return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTtl($type) {
+    if (!isset($this->cacheTtl[$type])) {
+      $this->cacheTtl[$type] = (int) $this->theme->getSetting("cdn_cache_ttl_$type", static::TTL_NEVER);
+    }
+    return $this->cacheTtl[$type];
+  }
+
+  /**
+   * Retrieves the unique cache identifier for the CDN Provider.
+   *
+   * @return string
+   *   The CDN Provider cache identifier.
+   */
+  protected function getCacheId() {
+    return "theme:{$this->theme->getName()}:cdn:{$this->getPluginId()}";
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCdnAssets($version = NULL, $theme = NULL) {
+    if (!isset($this->cdnAssets)) {
+      $this->cdnAssets = $this->cacheGet('assets');
+    }
+
+    $data = $this->getCdnAssetsCacheData($version, $theme);
+    $hash = Crypt::generateBase64HashIdentifier($data);
+    if (!isset($this->cdnAssets[$hash])) {
+      $this->cdnAssets[$hash] = $this->cacheGet('assets', $hash, [], function () use ($data) {
+        return $this->discoverCdnAssets($data['version'], $data['theme']);
+      });
+    }
+
+    return $this->cdnAssets[$hash];
+  }
+
+  /**
+   * Retrieves the data used to create a hash for CDN Assets.
+   *
+   * @param string $version
+   *   Optional. A specific version to use.
+   * @param string $theme
+   *   Optional. A specific theme to use.
+   *
+   * @return array
+   *   An array of components that will be serialized and hashed.
+   *
+   * @see \Drupal\bootstrap\Plugin\Provider\ProviderBase::getCdnAssets()
+   * @see \Drupal\bootstrap\Plugin\Provider\ProviderBase::alterFrameworkLibrary()
+   */
+  protected function getCdnAssetsCacheData($version = NULL, $theme = NULL) {
+    if (!isset($version) && $this->supportsVersions()) {
+      $version = $this->getCdnVersion();
+    }
+    if (!isset($theme) && $this->supportsThemes()) {
+      $theme = $this->getCdnTheme();
+    }
+    return [
+      'ttl' => $this->getCacheTtl(static::CACHE_LIBRARY),
+      'min' => [
+        'css' => !!\Drupal::config('system.performance')->get('css.preprocess'),
+        'js' => !!\Drupal::config('system.performance')->get('js.preprocess'),
+      ],
+      'provider' => $this->pluginId,
+      'version' => $version,
+      'theme' => $theme,
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCdnExceptions($reset = TRUE) {
+    $exceptions = $this->cdnExceptions;
+    if ($reset) {
+      $this->cdnExceptions = [];
+    }
+    return $exceptions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCdnTheme() {
+    return $this->supportsThemes() ? $this->theme->getSetting('cdn_theme', 'bootstrap') : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCdnThemes($version = NULL) {
+    // Immediately return if the CDN Provider does not support themes.
+    if (!$this->supportsThemes()) {
+      return [];
+    }
+
+    $data = $this->getCdnThemesCacheData($version);
+    $hash = Crypt::generateBase64HashIdentifier($data);
+    if (!isset($this->themes[$hash])) {
+      $this->themes[$hash] = $this->cacheGet('themes', $hash, [], function () use ($data) {
+        return $this->discoverCdnThemes($data['version']);
+      });
+    }
+
+    return $this->themes[$hash];
+  }
+
+  /**
+   * Retrieves the data used to create a hash for CDN Themes.
+   *
+   * @param string $version
+   *   Optional. A specific version to use. If not set, the
+   *   currently set CDN version of the active theme will be used.
+   *
+   * @return array
+   *   An array of components that will be serialized and hashed.
+   *
+   * @see \Drupal\bootstrap\Plugin\Provider\ProviderBase::getCdnThemes()
+   */
+  protected function getCdnThemesCacheData($version = NULL) {
+    if (!isset($version) && $this->supportsVersions()) {
+      $version = $this->getCdnVersion();
+    }
+    return [
+      'ttl' => $this->getCacheTtl(static::CACHE_THEMES),
+      'provider' => $this->pluginId,
+      'version' => $version,
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCdnVersion() {
+    return $this->supportsVersions() ? $this->theme->getSetting('cdn_version', Bootstrap::FRAMEWORK_VERSION) : NULL;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCdnVersions() {
+    // Immediately return if the CDN Provider does not support versions.
+    if (!$this->supportsVersions()) {
+      return [];
+    }
+
+    if (!isset($this->versions)) {
+      $hash = Crypt::generateBase64HashIdentifier($this->getCdnVersionsCacheData());
+      $this->versions = $this->cacheGet('versions', $hash, [], function () {
+        return $this->discoverCdnVersions();
+      });
+    }
+    return $this->versions;
+  }
+
+  /**
+   * Retrieves the data used to create a hash for CDN Versions.
+   *
+   * @return array
+   *   An array of components that will be serialized and hashed.
+   *
+   * @see \Drupal\bootstrap\Plugin\Provider\ProviderBase::getCdnVersions()
+   */
+  protected function getCdnVersionsCacheData() {
+    return [
+      'ttl' => $this->getCacheTtl(static::CACHE_THEMES),
+      'provider' => $this->pluginId,
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDescription() {
+    return $this->pluginDefinition['description'];
   }
 
   /**
@@ -306,110 +470,6 @@ class ProviderBase extends PluginBase implements ProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getCacheTtl($type) {
-    if (!isset($this->cacheTtl[$type])) {
-      $this->cacheTtl[$type] = (int) $this->theme->getSetting("cdn_cache_ttl_$type", static::TTL_NEVER);
-    }
-    return $this->cacheTtl[$type];
-  }
-
-  /**
-   * Retrieves the unique cache identifier for the CDN Provider.
-   *
-   * @return string
-   *   The CDN Provider cache identifier.
-   */
-  protected function getCacheId() {
-    return "theme:{$this->theme->getName()}:cdn:{$this->getPluginId()}";
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCdnAssets($version = NULL, $theme = NULL) {
-    if (!isset($version)) {
-      $version = $this->getCdnVersion();
-    }
-    if (!isset($theme)) {
-      $theme = $this->getCdnTheme();
-    }
-
-    if (!isset($this->cdnAssets)) {
-      $this->cdnAssets = $this->cacheGet('assets');
-    }
-
-    if (!isset($this->cdnAssets[$version][$theme])) {
-      $escapedVersion = Unicode::escapeDelimiter($version);
-      $this->cdnAssets[$version][$theme] = $this->cacheGet('assets', "$escapedVersion.$theme", [], function () use ($version, $theme) {
-        return $this->discoverCdnAssets($version, $theme);
-      });
-    }
-
-    return $this->cdnAssets[$version][$theme];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCdnExceptions($reset = TRUE) {
-    $exceptions = $this->cdnExceptions;
-    if ($reset) {
-      $this->cdnExceptions = [];
-    }
-    return $exceptions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCdnTheme() {
-    return $this->theme->getSetting("cdn_{$this->getPluginId()}_theme") ?: 'bootstrap';
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCdnThemes($version = NULL) {
-    if (!isset($version)) {
-      $version = $this->getCdnVersion();
-    }
-    if (!isset($this->themes[$version])) {
-      $this->themes[$version] = $this->cacheGet('themes', Unicode::escapeDelimiter($version), [], function () use ($version) {
-        return $this->discoverCdnThemes($version);
-      });
-    }
-    return $this->themes[$version];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCdnVersion(Theme $theme = NULL) {
-    return $this->theme->getSetting("cdn_{$this->getPluginId()}_version") ?: Bootstrap::FRAMEWORK_VERSION;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getCdnVersions() {
-    if (!isset($this->versions)) {
-      $this->versions = $this->cacheGet('versions', 'bootstrap', [], function () {
-        return $this->discoverCdnVersions();
-      });
-    }
-    return $this->versions;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getDescription() {
-    return $this->pluginDefinition['description'];
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function getLabel() {
     return $this->pluginDefinition['label'] ?: $this->getPluginId();
   }
@@ -419,17 +479,23 @@ class ProviderBase extends PluginBase implements ProviderInterface {
    *
    * @return string|null
    *   THe Drupal overrides CSS file.
+   *
+   * @todo This should really be a part of the CDN asset discovery phase.
+   *
+   * @see https://www.drupal.org/project/bootstrap/issues/2852156
    */
   protected function getOverrides() {
-    $version = $this->getCdnVersion();
+    $overrides = NULL;
+    $version = $this->getCdnVersion() ?: Bootstrap::FRAMEWORK_VERSION;
     $theme = $this->getCdnTheme();
     $theme = !$theme || $theme === '_default' || $theme === 'bootstrap' || $theme === 'bootstrap_theme' ? '' : "-$theme";
     foreach ($this->theme->getAncestry(TRUE) as $ancestor) {
-      $overrides = $ancestor->getPath() . "/css/{$version}/overrides{$theme}.min.css";
-      if (file_exists($overrides)) {
-        return $overrides;
+      $file = $ancestor->getPath() . "/css/{$version}/overrides{$theme}.min.css";
+      if (file_exists($file)) {
+        $overrides = $file;
       }
     }
+    return $overrides;
   }
 
   /**
@@ -460,18 +526,18 @@ class ProviderBase extends PluginBase implements ProviderInterface {
   }
 
   /**
-   * Retrieves JSON from a URI.
+   * Initiates an HTTP request.
    *
-   * @param string $uri
-   *   The URI to retrieve JSON from.
+   * @param string $url
+   *   The URL to retrieve.
    * @param array $options
    *   The options to pass to the HTTP client.
    *
-   * @return \Drupal\bootstrap\JsonResponse
-   *   A JsonResponse object.
+   * @return \Drupal\bootstrap\SerializedResponse
+   *   A SerializedResponse object.
    */
-  protected function requestJson($uri, array $options = []) {
-    $response = Bootstrap::requestJson($uri, $options, $exception);
+  protected function request($url, array $options = []) {
+    $response = Bootstrap::request($url, $options, $exception);
     if ($exception) {
       $this->addCdnException($exception);
     }
@@ -482,14 +548,65 @@ class ProviderBase extends PluginBase implements ProviderInterface {
    * {@inheritdoc}
    */
   public function resetCache() {
+    $this->getKeyValue()->deleteAll();
     $this->getKeyValueExpirable()->deleteAll();
 
     // Invalidate library info if this provider is the one currently used.
-    if (($provider = $this->theme->getCdnProvider()) && $provider->getPluginId() === $this->pluginId) {
+    if ($this->theme->getCdnProvider()->getPluginId() === $this->pluginId) {
       /** @var \Drupal\Core\Cache\CacheTagsInvalidatorInterface $invalidator */
       $invalidator = \Drupal::service('cache_tags.invalidator');
       $invalidator->invalidateTags(['library_info']);
     }
+  }
+
+  /**
+   * Sets CDN Provider exceptions, replacing any existing exceptions.
+   *
+   * @param \Throwable[] $exceptions
+   *   The Exceptions to set.
+   *
+   * @return static
+   */
+  protected function setCdnExceptions(array $exceptions) {
+    $this->cdnExceptions = [];
+    foreach ($exceptions as $exception) {
+      $this->addCdnException($exception);
+    }
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function supportsThemes() {
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function supportsVersions() {
+    return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function trackCdnExceptions(callable $callable) {
+    // Retrieve existing exceptions.
+    $existing = $this->getCdnExceptions();
+
+    // Execute the callable.
+    $callable($this);
+
+    // Retrieve any newly generated exceptions.
+    $new = $this->getCdnExceptions();
+
+    // Merge the existing and newly generated exceptions and set them.
+    $this->setCdnExceptions(array_merge($existing, $new));
+
+    // Return the newly generated exceptions.
+    return $new;
   }
 
   /****************************************************************************
@@ -566,7 +683,7 @@ class ProviderBase extends PluginBase implements ProviderInterface {
       // Otherwise, attempt to request API data if the provider has specified
       // an "api" URL to use.
       else {
-        $json = Bootstrap::requestJson($api);
+        $json = Bootstrap::request($api)->getData();
       }
 
       if (!isset($json)) {

@@ -135,17 +135,21 @@
       $context.find('[data-drupal-selector="edit-cdn"]').drupalSetSummary(function () {
         var summary = [];
         var $cdnProvider = $context.find('select[name="cdn_provider"] :selected');
-        var cdnProvider = $cdnProvider.val();
         if ($cdnProvider.length) {
           var provider = $cdnProvider.text();
 
-          var $version = $context.find('select[name="cdn_' + cdnProvider + '_version"] :selected');
+          var $version = $context.find('select[name="cdn_version"] :selected');
           if ($version.length && $version.val().length) {
             provider += ' - ' + $version.text();
-            var $theme = $context.find('select[name="cdn_' + cdnProvider + '_theme"] :selected');
+            var $theme = $context.find('select[name="cdn_theme"] :selected');
             if ($theme.length) {
               provider += ' (' + $theme.text() + ')';
             }
+          }
+          else if ($cdnProvider.val() === 'custom') {
+            var $urls = $context.find('textarea[name="cdn_custom"]');
+            var urls = ($urls.val() + '').split(/\r\n|\n/).filter(Boolean);
+            provider += ' (' + Drupal.formatPlural(urls.length, '1 URL', '@count URLs') + ')';
           }
 
           summary.push(provider);
@@ -197,10 +201,11 @@
             }
           },
           complete: function () {
-            $preview.parent().find('select[name="cdn_jsdelivr_theme"]').bind('change', function () {
+            $preview.parent().find('select[name="cdn_theme"]').bind('change', function () {
               $preview.find('.bootswatch-preview').addClass('visually-hidden');
-              if ($(this).val().length) {
-                $preview.find('#bootstrap-theme-preview-' + $(this).val()).removeClass('visually-hidden');
+              var theme = $(this).val();
+              if (theme && theme.length) {
+                $preview.find('#bootstrap-theme-preview-' + theme).removeClass('visually-hidden');
               }
             }).change();
           }

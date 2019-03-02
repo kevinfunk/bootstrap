@@ -36,9 +36,7 @@ class LibraryInfo extends PluginBase implements AlterInterface {
       }
 
       // Alter the framework library based on currently set CDN Provider.
-      if ($cdnProvider = $this->theme->getCdnProvider()) {
-        $cdnProvider->alterFrameworkLibrary($libraries['framework']);
-      }
+      $this->theme->getCdnProvider()->alterFrameworkLibrary($libraries['framework']);
     }
     // Core replacements.
     elseif ($extension === 'core') {

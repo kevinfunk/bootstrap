@@ -2,7 +2,6 @@
 
 namespace Drupal\bootstrap;
 
-use Drupal\bootstrap\Plugin\Provider\Broken;
 use Drupal\bootstrap\Plugin\ProviderManager;
 use Drupal\bootstrap\Plugin\SettingManager;
 use Drupal\bootstrap\Plugin\UpdateManager;
@@ -116,6 +115,13 @@ class Theme {
    * @var string
    */
   protected $name;
+
+  /**
+   * An array of Setting instances.
+   *
+   * @var \Drupal\bootstrap\Plugin\Setting\SettingInterface[]
+   */
+  protected $settings;
 
   /**
    * The current theme Extension object.
@@ -342,7 +348,7 @@ class Theme {
 
     // Generate a unique hash for all parameters passed as a change in any of
     // them could potentially return different results.
-    $hash = Crypt::generateHash($mask, $path, $options);
+    $hash = Crypt::generateBase64HashIdentifier($options, [$mask, $path]);
 
     if (!$files->has($hash)) {
       $files->set($hash, file_scan_directory($path, $mask, $options));
@@ -410,13 +416,13 @@ class Theme {
   /**
    * Retrieves the set CDN Provider instance for the theme.
    *
-   * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface|null
-   *   A CDN Provider instance, NULL if CDN Provider is not set.
+   * @return \Drupal\bootstrap\Plugin\Provider\ProviderInterface
+   *   A CDN Provider instance.
    */
   public function getCdnProvider() {
     $provider = $this->getSetting('cdn_provider');
     $providers = $this->getCdnProviders();
-    return isset($providers[$provider]) ? $providers[$provider] : NULL;
+    return isset($providers[$provider]) ? $providers[$provider] : ProviderManager::broken();
   }
 
   /**
@@ -538,30 +544,38 @@ class Theme {
    *
    * @param string $name
    *   Optional. The name of a specific setting plugin instance to return.
+   * @param bool $rebuild
+   *   Flag indicating whether to reset any cached definitions and rebuild
+   *   the settings.
    *
    * @return \Drupal\bootstrap\Plugin\Setting\SettingInterface|\Drupal\bootstrap\Plugin\Setting\SettingInterface[]|null
    *   If $name was provided, it will either return a specific setting plugin
    *   instance or NULL if not set. If $name was omitted it will return an array
    *   of setting plugin instances, keyed by their name.
    */
-  public function getSettingPlugin($name = NULL) {
-    $settings = [];
-
-    // Only continue if the theme is Bootstrap based.
-    if ($this->isBootstrap()) {
-      $setting_manager = new SettingManager($this);
-      foreach (array_keys($setting_manager->getDefinitions()) as $setting) {
-        $settings[$setting] = $setting_manager->createInstance($setting);
+  public function getSettingPlugin($name = NULL, $rebuild = FALSE) {
+    if (!isset($this->settings) || $rebuild) {
+      $settings = [];
+      if ($this->isBootstrap()) {
+        $setting_manager = new SettingManager($this);
+        if ($rebuild) {
+          $setting_manager->clearCachedDefinitions();
+        }
+        $plugin_ids = array_keys($setting_manager->getDefinitions());
+        foreach ($plugin_ids as $plugin_id) {
+          $settings[$plugin_id] = $setting_manager->createInstance($plugin_id);
+        }
       }
+      $this->settings = $settings;
     }
 
     // Return a specific setting plugin.
     if (isset($name)) {
-      return isset($settings[$name]) ? $settings[$name] : NULL;
+      return isset($this->settings[$name]) ? $this->settings[$name] : NULL;
     }
 
     // Return all setting plugins.
-    return $settings;
+    return $this->settings;
   }
 
   /**
@@ -646,7 +660,7 @@ class Theme {
     if (!isset($includes[$include])) {
       $includes[$include] = !!@include_once $include;
       if (!$includes[$include]) {
-        drupal_set_message(t('Could not include file: @include', ['@include' => $include]), 'error');
+        Bootstrap::message(t('Could not include file: @include', ['@include' => $include]), 'error');
       }
     }
     return $includes[$include];
@@ -769,10 +783,17 @@ class Theme {
    *   A provider instance or FALSE if no provider is set.
    *
    * @deprecated in 8.x-3.18, will be removed in a future release.
+   *
+   * @see \Drupal\bootstrap\Theme::getCdnProvider()
+   * @see \Drupal\bootstrap\Plugin\ProviderManager::load()
    */
   public function getProvider($provider = NULL) {
-    $instance = ProviderManager::load($this, $provider);
-    return $instance instanceof Broken || !$this->isBootstrap() ? FALSE : $instance;
+    $provider = $provider ?: $this->getSetting('cdn_provider');
+    $providers = $this->getProviders();
+    if (!isset($providers[$provider])) {
+      return FALSE;
+    }
+    return $providers[$provider];
   }
 
   /**
@@ -782,22 +803,11 @@ class Theme {
    *   All provider instances.
    *
    * @deprecated in 8.x-3.18, will be removed in a future release.
+   *
+   * @see \Drupal\bootstrap\Theme::getCdnProviders()
    */
   public function getProviders() {
-    $providers = [];
-
-    // Only continue if the theme is Bootstrap based.
-    if ($this->isBootstrap()) {
-      $provider_manager = new ProviderManager($this);
-      foreach (array_keys($provider_manager->getDefinitions()) as $provider) {
-        if ($provider === 'none' || $provider === '_broken') {
-          continue;
-        }
-        $providers[$provider] = $provider_manager->get($provider, ['theme' => $this]);
-      }
-    }
-
-    return $providers;
+    return !$this->isBootstrap() ? [] : $this->getCdnProviders();
   }
 
   /**
@@ -806,7 +816,9 @@ class Theme {
    * @return \Drupal\bootstrap\Plugin\Setting\SettingInterface[]
    *   An associative array of setting objects, keyed by their name.
    *
-   * @deprecated Will be removed in a future release. Use \Drupal\bootstrap\Theme::getSettingPlugin instead.
+   * @deprecated in 8.x-3.1, will be removed in a future release.
+   *
+   * @see \Drupal\bootstrap\Theme::getSettingPlugin()
    */
   public function getSettingPlugins() {
     Bootstrap::deprecated();

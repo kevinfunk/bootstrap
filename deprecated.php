@@ -771,19 +771,14 @@ function bootstrap_element_smart_description(array &$element, array &$target = N
 function bootstrap_get_cdn_assets($type = NULL, $provider = NULL, $theme = NULL) {
   Bootstrap::deprecated();
   $original_type = $type;
-  $assets = [];
+  $return = [];
   $config = \Drupal::config('system.performance');
-  $cdnAssets = ProviderManager::load($theme, $provider)->getCdnAssets();
+  $assets = ProviderManager::load($theme, $provider)->getCdnAssets();
   $types = !isset($type) ? ['css', 'js'] : (array) $type;
   foreach ($types as $type) {
-    if ($config->get("$type.preprocess") && !empty($cdnAssets['min'][$type])) {
-      $assets[$type] = $cdnAssets['min'][$type];
-    }
-    elseif (!empty($data[$type])) {
-      $assets[$type] = $cdnAssets[$type];
-    }
+    $return[$type] = $assets->get($type, $config->get("$type.preprocess"));
   }
-  return is_string($original_type) ? $assets[$original_type] : $assets;
+  return is_string($original_type) ? $return[$original_type] : $return;
 }
 
 /**

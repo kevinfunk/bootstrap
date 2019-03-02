@@ -20,6 +20,13 @@ class ProviderManager extends PluginManager implements FallbackPluginManagerInte
   const FILE_PATH = 'public://bootstrap/provider';
 
   /**
+   * The Broken CDN Provider.
+   *
+   * @var \Drupal\bootstrap\Plugin\Provider\Broken
+   */
+  protected static $broken;
+
+  /**
    * Constructs a new \Drupal\bootstrap\Plugin\ProviderManager object.
    *
    * @param \Drupal\bootstrap\Theme $theme
@@ -64,6 +71,19 @@ class ProviderManager extends PluginManager implements FallbackPluginManagerInte
   }
 
   /**
+   * Returns the Broken CDN Provider instance.
+   *
+   * @return \Drupal\bootstrap\Plugin\Provider\Broken
+   *   The Broken CDN Provider.
+   */
+  public static function broken() {
+    if (!isset(static::$broken)) {
+      static::$broken = (new static(Bootstrap::getTheme()))->get('_broken');
+    }
+    return static::$broken;
+  }
+
+  /**
    * Loads a CDN Provider.
    *
    * @param \Drupal\bootstrap\Theme|string $theme
@@ -80,7 +100,7 @@ class ProviderManager extends PluginManager implements FallbackPluginManagerInte
    */
   public static function load($theme = NULL, $provider = NULL, array $configuration = []) {
     $theme = Bootstrap::getTheme($theme);
-    return (new static($theme))->get($provider ?: $theme->getSetting('cdn_provider'), $configuration + ['theme' => $theme]);
+    return (new static($theme))->get(isset($provider) ? $provider : $theme->getSetting('cdn_provider'), $configuration + ['theme' => $theme]);
   }
 
 }

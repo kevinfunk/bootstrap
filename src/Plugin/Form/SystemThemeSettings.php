@@ -31,6 +31,10 @@ class SystemThemeSettings extends FormBase implements FormInterface {
 
     // Iterate over all setting plugins and add them to the form.
     foreach ($theme->getSettingPlugin() as $setting) {
+      // Skip settings that shouldn't be created automatically.
+      if (!$setting->autoCreateFormElement()) {
+        continue;
+      }
       $setting->alterForm($form->getArray(), $form_state);
     }
   }
@@ -197,6 +201,12 @@ class SystemThemeSettings extends FormBase implements FormInterface {
 
       // Retrieve the submitted value.
       $value = $form_state->getValue($name);
+
+      // Trim any new lines and convert to simple new line breaks.
+      $definition = $setting->getPluginDefinition();
+      if (isset($definition['type']) && $definition['type'] === 'textarea' && is_string($value)) {
+        $value = implode("\n", array_filter(array_map('trim', preg_split("/\r\n|\n/", $value))));
+      }
 
       // Determine if the setting has a new value that overrides the original.
       // Ignore the schemas "setting" because it's handled by UpdateManager.

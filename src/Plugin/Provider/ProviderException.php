@@ -26,7 +26,7 @@ class ProviderException extends \RuntimeException {
    * @param \Throwable $previous
    *   A previous exception.
    */
-  public function __construct(ProviderInterface $provider, $message = "", int $code = 0, \Throwable $previous = NULL) {
+  public function __construct(ProviderInterface $provider, $message = "", $code = 0, \Throwable $previous = NULL) {
     parent::__construct($message, $code, $previous);
     $this->provider = $provider;
   }

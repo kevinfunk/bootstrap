@@ -2,8 +2,6 @@
 
 namespace Drupal\bootstrap\Plugin\Provider;
 
-use Drupal\bootstrap\Plugin\PluginBase;
-
 /**
  * Broken CDN Provider instance.
  *
@@ -12,9 +10,10 @@ use Drupal\bootstrap\Plugin\PluginBase;
  * @BootstrapProvider(
  *   id = "_broken",
  *   label = @Translation("Broken"),
+ *   description = @Translation("Broken CDN Provider instance."),
  * )
  */
-class Broken extends PluginBase implements ProviderInterface {
+class Broken extends ProviderBase {
 
   /**
    * {@inheritdoc}
@@ -34,7 +33,7 @@ class Broken extends PluginBase implements ProviderInterface {
    * {@inheritdoc}
    */
   public function getCdnAssets($version = NULL, $theme = NULL) {
-    return [];
+    return new CdnAssets();
   }
 
   /**
@@ -55,7 +54,7 @@ class Broken extends PluginBase implements ProviderInterface {
    * {@inheritdoc}
    */
   public function getCdnThemes($version = NULL) {
-    return [];
+    return new CdnAssets();
   }
 
   /**
@@ -75,22 +74,22 @@ class Broken extends PluginBase implements ProviderInterface {
   /**
    * {@inheritdoc}
    */
-  public function getDescription() {
-    return $this->t('Broken CDN Provider instance.');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLabel() {
-    return $this->t('Broken');
-  }
-
-  /**
-   * {@inheritdoc}
-   */
   public function resetCache() {
     // Intentionally left empty.
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function supportsThemes() {
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function supportsVersions() {
+    return FALSE;
   }
 
   /****************************************************************************
@@ -98,60 +97,6 @@ class Broken extends PluginBase implements ProviderInterface {
    * Deprecated methods
    *
    ***************************************************************************/
-
-  /**
-   * {@inheritdoc}
-   *
-   * @deprecated in 8.x-3.18, will be removed in a future release.
-   */
-  public function getApi() {
-    return NULL;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @deprecated in 8.x-3.18, will be removed in a future release.
-   */
-  public function getAssets($types = NULL) {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @deprecated in 8.x-3.18, will be removed in a future release.
-   */
-  public function getThemes() {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @deprecated in 8.x-3.18, will be removed in a future release.
-   */
-  public function getVersions() {
-    return [];
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @deprecated in 8.x-3.18, will be removed in a future release.
-   */
-  public function hasError() {
-    return FALSE;
-  }
-
-  /**
-   * {@inheritdoc}
-   *
-   * @deprecated in 8.x-3.18, will be removed in a future release.
-   */
-  public function isImported() {
-    return FALSE;
-  }
 
   /**
    * {@inheritdoc}

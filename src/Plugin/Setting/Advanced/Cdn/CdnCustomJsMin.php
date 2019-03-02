@@ -2,6 +2,8 @@
 
 namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
 
+use Drupal\bootstrap\Plugin\Setting\DeprecatedSettingInterface;
+
 /**
  * Due to BC reasons, this class cannot be moved.
  *
@@ -11,10 +13,7 @@ namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
 /**
  * The "cdn_custom_js_min" theme setting.
  *
- * @ingroup plugins_setting
- *
  * @BootstrapSetting(
- *   cdn_provider = "custom",
  *   id = "cdn_custom_js_min",
  *   type = "textfield",
  *   weight = 4,
@@ -27,5 +26,40 @@ namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
  *     "custom" = false,
  *   },
  * )
+ *
+ * @deprecated since 8.x-3.18. Replaced with new setting. Will be removed in a
+ *   future release.
+ *
+ * @see \Drupal\bootstrap\Plugin\Setting\Advanced\Cdn\CdnCustom
  */
-class CdnCustomJsMin extends CdnProviderBase {}
+class CdnCustomJsMin extends CdnProviderBase implements DeprecatedSettingInterface {
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedReason() {
+    return $this->t('Replaced with new setting. Will be removed in a future release.');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedReplacement() {
+    return '\Drupal\bootstrap\Plugin\Setting\Advanced\Cdn\CdnCustom';
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedReplacementSetting() {
+    return $this->theme->getSettingPlugin('cdn_custom');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedVersion() {
+    return '8.x-3.18';
+  }
+
+}

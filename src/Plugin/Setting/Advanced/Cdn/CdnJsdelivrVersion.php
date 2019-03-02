@@ -8,14 +8,10 @@ namespace Drupal\bootstrap\Plugin\Setting\Advanced\Cdn;
  * @todo Move namespace up one.
  */
 
-use Drupal\bootstrap\Utility\Element;
-use Drupal\Component\Utility\Html;
-use Drupal\Core\Form\FormStateInterface;
+use Drupal\bootstrap\Plugin\Setting\DeprecatedSettingInterface;
 
 /**
  * The "cdn_jsdelivr_version" theme setting.
- *
- * @ingroup plugins_setting
  *
  * @BootstrapSetting(
  *   cdn_provider = "jsdelivr",
@@ -31,34 +27,40 @@ use Drupal\Core\Form\FormStateInterface;
  *     "jsdelivr" = false,
  *   },
  * )
+ *
+ * @deprecated since 8.x-3.18. Replaced with new setting. Will be removed in a
+ *   future release.
+ *
+ * @see \Drupal\bootstrap\Plugin\Setting\Advanced\Cdn\CdnVersion
  */
-class CdnJsdelivrVersion extends CdnProviderBase {
+class CdnJsdelivrVersion extends CdnProviderBase implements DeprecatedSettingInterface {
 
   /**
    * {@inheritdoc}
    */
-  public function buildCdnProviderElement(Element $setting, FormStateInterface $form_state) {
-    $plugin_id = Html::cleanCssIdentifier($this->settingProvider->getPluginId());
-    $setting->setProperty('options', $this->settingProvider->getCdnVersions());
-    $setting->setProperty('ajax', [
-      'callback' => [get_class($this), 'ajaxProviderCallback'],
-      'wrapper' => 'cdn-provider-' . $plugin_id,
-    ]);
+  public function getDeprecatedReason() {
+    return $this->t('Replaced with new setting. Will be removed in a future release.');
+  }
 
-    $setting->setProperty('smart_description', FALSE);
-    if ($this->settingProvider->getCdnExceptions(FALSE)) {
-      $setting->setProperty('description', t('Unable to parse the @provider API to determine versions. This version is the default version supplied by the base theme.', [
-        '@provider' => $this->settingProvider->getLabel(),
-      ]));
-    }
-    else {
-      $setting->setProperty('description', t('These versions are automatically populated by the @provider API.', [
-        '@provider' => $this->settingProvider->getLabel(),
-      ]));
-    }
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedReplacement() {
+    return '\Drupal\bootstrap\Plugin\Setting\Advanced\Cdn\CdnVersion';
+  }
 
-    // Check for any CDN failure(s).
-    $this->checkCdnExceptions();
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedReplacementSetting() {
+    return $this->theme->getSettingPlugin('cdn_version');
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDeprecatedVersion() {
+    return '8.x-3.18';
   }
 
 }

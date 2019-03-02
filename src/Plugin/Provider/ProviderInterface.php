@@ -101,11 +101,8 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
    *
    * @param array $framework
    *   The framework library, passed by reference.
-   * @param bool $min
-   *   Optional. Flag determining whether to use minified resources. If not set,
-   *   this will automatically be determined based on system configuration.
    */
-  public function alterFrameworkLibrary(array &$framework, $min = NULL);
+  public function alterFrameworkLibrary(array &$framework);
 
   /**
    * Retrieves the cache time-to-live (TTL) value.
@@ -133,14 +130,8 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
    *   Optional. A specific set of themed assets to return, if any. If not set,
    *   the setting stored in the active theme will be used.
    *
-   * @return array
-   *   An associative array containing the following keys, if there were
-   *   matching files found:
-   *   - css
-   *   - js
-   *   - min:
-   *     - css
-   *     - js
+   * @return \Drupal\bootstrap\Plugin\Provider\CdnAssets
+   *   A CdnAssets object.
    */
   public function getCdnAssets($version = NULL, $theme = NULL);
 
@@ -174,9 +165,10 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
    *   Optional. A specific version of themes to retrieve. If not set, the
    *   currently set CDN version of the active theme will be used.
    *
-   * @return array
-   *   An array of themes. If the CDN Provider does not support any it will
-   *   just be an empty array.
+   * @return \Drupal\bootstrap\Plugin\Provider\CdnAssets[]
+   *   An associative array of CDN assets, similar to what is returned in
+   *   \Drupal\bootstrap\Plugin\Provider\ProviderBase::getCdnAssets(), but
+   *   keyed by individual theme names.
    */
   public function getCdnThemes($version = NULL);
 
@@ -191,9 +183,8 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
   /**
    * Retrieves the versions supported by the CDN Provider.
    *
-   * @return array
-   *   An array of versions. If the CDN Provider does not support any it will
-   *   just be an empty array.
+   * @return array|false
+   *   An associative array of versions, also keyed by the version.
    */
   public function getCdnVersions();
 
@@ -217,6 +208,33 @@ interface ProviderInterface extends PluginInspectionInterface, DerivativeInspect
    * Removes any cached data the CDN Provider may have.
    */
   public function resetCache();
+
+  /**
+   * Indicates whether the CDN Provider supports themes.
+   *
+   * @return bool
+   *   TRUE or FALSE
+   */
+  public function supportsThemes();
+
+  /**
+   * Indicates whether the CDN Provider supports versions.
+   *
+   * @return bool
+   *   TRUE or FALSE
+   */
+  public function supportsVersions();
+
+  /**
+   * Tracks any newly generated CDN exceptions generated during a callable.
+   *
+   * @param callable $callable
+   *   The callback to execute.
+   *
+   * @return \Drupal\bootstrap\Plugin\Provider\ProviderException[]
+   *   An array of newly generated ProviderException objects, if any.
+   */
+  public function trackCdnExceptions(callable $callable);
 
   /****************************************************************************
    *

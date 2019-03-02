@@ -28,15 +28,6 @@ After NodeJS has finished installing its own modules, it will automatically
 invoke `grunt install` for you. This is a grunt task that is specifically
 designed to keep the project in sync amongst maintainers.
 
-## Drush
-There are several commands available to run, please execute `drush` to view the
-full list. This topic only covers the commands this project created.
-
-### `drush bootstrap-generate-docs` or `drush bs-docs`
-Generates markdown documentation for the Drupal based code. Possible arguments:
-- **type:** The specific type of documentation to generate, defaults to `all`.
-  Possible values: `all|settings`
-
 ## Grunt
 There are several tasks available to run, please execute `grunt --help` to view
 the full list of tasks currently available. This topic only covers the most
@@ -105,6 +96,15 @@ this limits the rapid development of the `overrides.less` file to the default
 Bootstrap theme. If you have switched themes, you must manually compile all
 the version and theme override files.
 
+## Custom Scripts
+This project also uses custom/standalone PHP scripts opposed to vendor specific
+CLI programs (e.g. Drush or Drupal Console). This is primarily to ensure these
+scripts can be executed regardless of which vendor specific CLI program or
+version a maintainer may have installed. 
+
+### `./gen-theme-setting-docs.php`
+Generates the markdown documentation for all available theme settings.
+
 ## Releases
 This project attempts to provide more structured release notes. This allows the
 project to communicate more effectively to the users what exactly has changed
@@ -127,6 +127,11 @@ However, if it is long, it should really be a change record.
 
 <p>&nbsp;</p>
 <p>Changes since <!-- previous release --> (<!-- commit count -->):</p>
+
+<h3 id="security">Security Announcements</h3>
+<ul>
+  <li><!-- Issue/Commit Message --></li>
+</ul>
 
 <h3 id="features">New Features</h3>
 <ul>
