@@ -158,6 +158,26 @@ class CdnAssets {
   }
 
   /**
+   * Retrieves a specific theme.
+   *
+   * @param string $theme
+   *   The theme to return. If not specified, the first available theme will
+   *   be returned.
+   *
+   * @return static
+   */
+  public function getTheme($theme = NULL) {
+    $themes = $this->getThemes();
+    if (!$theme) {
+      return reset($themes) ?: new static();
+    }
+    if (isset($themes[$theme])) {
+      return $themes[$theme];
+    }
+    return new static();
+  }
+
+  /**
    * Groups available assets by theme.
    *
    * @return \Drupal\bootstrap\Plugin\Provider\CdnAssets[]
@@ -205,6 +225,19 @@ class CdnAssets {
     }
 
     return $themes;
+  }
+
+  /**
+   * Merges another CdnAssets object onto this one.
+   *
+   * @param \Drupal\bootstrap\Plugin\Provider\CdnAssets $assets
+   *   A CdnAssets object.
+   *
+   * @return static
+   */
+  public function merge(CdnAssets $assets) {
+    $this->appendAssets($assets->toArray());
+    return $this;
   }
 
   /**

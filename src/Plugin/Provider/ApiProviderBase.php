@@ -20,9 +20,13 @@ abstract class ApiProviderBase extends ProviderBase {
   protected function discoverCdnAssets($version, $theme = NULL) {
     if ($this->supportsThemes()) {
       $themes = $this->getCdnThemes($version);
-      return isset($themes[$theme]) ? $themes[$theme] : new CdnAssets();
+      if (isset($themes[$theme])) {
+        return $themes[$theme];
+      }
+      // Fall back to the first available theme if possible (likely Bootstrap).
+      return reset($themes) ?: new CdnAssets();
     }
-    return $this->requestApiAssets('bootstrap', $version, $this->getCacheTtl(static::CACHE_ASSETS));
+    return $this->requestApiAssets('bootstrap', $version)->getTheme('bootstrap');
   }
 
   /**
@@ -31,7 +35,7 @@ abstract class ApiProviderBase extends ProviderBase {
   protected function discoverCdnThemes($version) {
     $assets = new CdnAssets();
     foreach (['bootstrap', 'bootswatch'] as $library) {
-      $assets = $this->requestApiAssets($library, $version, $this->getCacheTtl(static::CACHE_THEMES), $assets);
+      $assets = $this->requestApiAssets($library, $version, $assets);
     }
     return $assets->getThemes();
   }
@@ -40,7 +44,7 @@ abstract class ApiProviderBase extends ProviderBase {
    * {@inheritdoc}
    */
   protected function discoverCdnVersions() {
-    return $this->requestApiVersions('bootstrap', $this->getCacheTtl(static::CACHE_VERSIONS));
+    return $this->requestApiVersions('bootstrap');
   }
 
   /**
@@ -112,7 +116,7 @@ abstract class ApiProviderBase extends ProviderBase {
    *   Additional information about the file, if any.
    *
    * @return \Drupal\bootstrap\Plugin\Provider\CdnAsset
-   *   A CDN URL.
+   *   A CDN Asset object, for a given URL.
    */
   protected function getCdnUrl($library, $version, $file, array $info = []) {
     $library = $this->mapLibrary($library);
@@ -302,18 +306,16 @@ abstract class ApiProviderBase extends ProviderBase {
    *   The library to request.
    * @param string $version
    *   The version to request.
-   * @param int $ttl
-   *   Optional. A specific TTL value to use for caching the HTTP request. If
-   *   not set, it will default to whatever is returned by the HTTP request.
    * @param \Drupal\bootstrap\Plugin\Provider\CdnAssets $assets
    *   An existing CdnAssets object, if chaining multiple requests together.
    *
    * @return \Drupal\bootstrap\Plugin\Provider\CdnAssets
    *   The CdnAssets provided by the API.
    */
-  protected function requestApiAssets($library, $version, $ttl = NULL, CdnAssets $assets = NULL) {
+  protected function requestApiAssets($library, $version, CdnAssets $assets = NULL) {
     $url = $this->getApiAssetsUrl($library, $version);
-    $data = $this->request($url, ['ttl' => $ttl])->getData();
+    $options = ['ttl' => $this->getCacheTtl(static::CACHE_ASSETS)];
+    $data = $this->request($url, $options)->getData();
 
     // If bootstrap data could not be returned, provide defaults.
     if (!$data && $this->cdnExceptions && $library === 'bootstrap') {
@@ -336,16 +338,14 @@ abstract class ApiProviderBase extends ProviderBase {
    *
    * @param string $library
    *   The library to request versions for.
-   * @param int $ttl
-   *   Optional. A specific TTL value to use for caching the HTTP request. If
-   *   not set, it will default to whatever is returned by the HTTP request.
    *
    * @return array
    *   An associative array of versions, keyed by version.
    */
-  public function requestApiVersions($library, $ttl = NULL) {
+  public function requestApiVersions($library) {
     $url = $this->getApiVersionsUrl($library);
-    $data = $this->request($url, ['ttl' => $ttl])->getData();
+    $options = ['ttl' => $this->getCacheTtl(static::CACHE_VERSIONS)];
+    $data = $this->request($url, $options)->getData();
 
     // If bootstrap data could not be returned, provide defaults.
     if (!$data && $this->cdnExceptions && $library === 'bootstrap') {

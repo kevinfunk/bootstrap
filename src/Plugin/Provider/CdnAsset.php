@@ -33,7 +33,7 @@ class CdnAsset {
    *
    * @var string
    */
-  const VALID_FILE_REGEXP = '`([^/]*)/bootstrap(-theme)?(\.min)?\.(js|css)$`';
+  const VALID_FILE_REGEXP = '`([^/]*)/(?:[\w-]+)?bootstrap(?:-([\w]+))?(\.min)?\.(js|css)$`';
 
   /**
    * A list of available Bootswatch themes, keyed by major Bootstrap version.
@@ -161,27 +161,33 @@ class CdnAsset {
    */
   public function __construct($url, $library = NULL, $version = NULL, array $info = []) {
     // Extract the necessary data from the file.
-    list($path, $example, $minified, $type) = static::extractParts($url);
+    list($path, $theme, $minified, $type) = static::extractParts($url);
 
     // Bootstrap's example theme.
-    if ($example) {
+    if ($theme === 'theme') {
       $theme = 'bootstrap_theme';
       $label = $this->t('Example Theme');
-      $library = 'bootstrap';
+      if (!isset($library)) {
+        $library = 'bootstrap';
+      }
     }
     // Core bootstrap library.
-    elseif ($path === 'css' || $path === 'js') {
+    elseif (!$theme && ($path === 'css' || $path === 'js' || $path === Bootstrap::PROJECT_BRANCH)) {
       $theme = 'bootstrap';
       $label = $this->t('Default');
-      $library = 'bootstrap';
+      if (!isset($library)) {
+        $library = 'bootstrap';
+      }
     }
     // Other (e.g. bootswatch theme).
     else {
       $bootswatchThemes = isset(static::$bootswatchThemes[Bootstrap::FRAMEWORK_VERSION[0]]) ? static::$bootswatchThemes[Bootstrap::FRAMEWORK_VERSION[0]] : [];
-      $theme = in_array($path, $bootswatchThemes) ? $path : 'bootstrap';
+      if (!$theme || ($theme && !in_array($theme, $bootswatchThemes))) {
+        $theme = in_array($path, $bootswatchThemes) ? $path : 'bootstrap';
+      }
       $label = new HtmlEscapedText(ucfirst($theme));
       if (!isset($library)) {
-        $library = in_array($path, $bootswatchThemes) ? 'bootswatch' : 'unknown';
+        $library = in_array($theme, $bootswatchThemes) ? 'bootswatch' : 'unknown';
       }
     }
 
@@ -217,10 +223,10 @@ class CdnAsset {
   protected static function extractParts($url) {
     preg_match(static::VALID_FILE_REGEXP, $url, $matches);
     $path = isset($matches[1]) ? mb_strtolower(Html::escape($matches[1])) : NULL;
-    $example = isset($matches[2]) ? !!$matches[2] : FALSE;
+    $theme = isset($matches[2]) ? mb_strtolower(Html::escape($matches[2])) : NULL;
     $minified = isset($matches[3]) ? !!$matches[3] : FALSE;
     $type = isset($matches[4]) ? mb_strtolower(Html::escape($matches[4])) : NULL;
-    return [$path, $example, $minified, $type];
+    return [$path, $theme, $minified, $type];
   }
 
   /**

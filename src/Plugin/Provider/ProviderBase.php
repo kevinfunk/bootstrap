@@ -104,35 +104,31 @@ class ProviderBase extends PluginBase implements ProviderInterface {
     $hash = Crypt::generateBase64HashIdentifier($data);
 
     // Retrieve the cached value or build it if necessary.
-    $assets = $this->cacheGet('library', $hash, [], function () use ($data) {
+    $framework = $this->cacheGet('library', $hash, [], function () use ($framework, $data) {
       $version = isset($data['version']) ? $data['version'] : NULL;
       $theme = isset($data['theme']) ? $data['theme'] : NULL;
-      return $this->getCdnAssets($version, $theme)->toLibraryArray($data['min']);
+      $assets = $this->getCdnAssets($version, $theme)->toLibraryArray($data['min']);
+
+      // Immediately return if there are no theme CDN assets to use.
+      if (empty($assets)) {
+        return $framework;
+      }
+
+      // Override the framework version with the CDN version that is being used.
+      if (isset($data['version'])) {
+        $framework['version'] = $data['version'];
+      }
+
+      // @todo Provide a UI setting for this?
+      $styles = [];
+      if ($this->theme->getSetting('cdn_styles', TRUE)) {
+        $stylesProvider = ProviderManager::load($this->theme, 'drupal_bootstrap_styles');
+        $styles = $stylesProvider->getCdnAssets($version, $theme)->toLibraryArray($data['min']);
+      }
+
+      // Merge the assets with the existing library info and return it.
+      return NestedArray::mergeDeepArray([$assets, $styles, $framework], TRUE);
     });
-
-    // Immediately return if there are no theme CDN assets to use.
-    if (empty($assets)) {
-      return;
-    }
-
-    // Override the framework version with the CDN version that is being used.
-    if (isset($data['version'])) {
-      $framework['version'] = $data['version'];
-    }
-
-    // Merge the assets into the library info.
-    $framework = NestedArray::mergeDeepArray([$assets, $framework], TRUE);
-
-    // The overrides file must also be stored in the "base" category so
-    // it isn't added after any potential sub-theme's "theme" category.
-    // There's no weight, so it will be added after the provider's assets.
-    // Since this uses a relative path to the ancestor from DRUPAL_ROOT,
-    // the entire path must be prepended with a forward slash (/) so it
-    // doesn't prepend the active theme's path.
-    // @see https://www.drupal.org/node/2770613
-    if ($overrides = $this->getOverrides()) {
-      $framework['css']['base']["/$overrides"] = [];
-    }
   }
 
   /**
@@ -267,6 +263,10 @@ class ProviderBase extends PluginBase implements ProviderInterface {
   public function getCacheTtl($type) {
     if (!isset($this->cacheTtl[$type])) {
       $this->cacheTtl[$type] = (int) $this->theme->getSetting("cdn_cache_ttl_$type", static::TTL_NEVER);
+      // If TTL is -1, the set a far reaching date from now.
+      if ($this->cacheTtl[$type] === static::TTL_FOREVER) {
+        $this->cacheTtl[$type] = static::TTL_ONE_YEAR * 10;
+      }
     }
     return $this->cacheTtl[$type];
   }
@@ -472,30 +472,6 @@ class ProviderBase extends PluginBase implements ProviderInterface {
    */
   public function getLabel() {
     return $this->pluginDefinition['label'] ?: $this->getPluginId();
-  }
-
-  /**
-   * Retrieves the Drupal overrides CSS file.
-   *
-   * @return string|null
-   *   THe Drupal overrides CSS file.
-   *
-   * @todo This should really be a part of the CDN asset discovery phase.
-   *
-   * @see https://www.drupal.org/project/bootstrap/issues/2852156
-   */
-  protected function getOverrides() {
-    $overrides = NULL;
-    $version = $this->getCdnVersion() ?: Bootstrap::FRAMEWORK_VERSION;
-    $theme = $this->getCdnTheme();
-    $theme = !$theme || $theme === '_default' || $theme === 'bootstrap' || $theme === 'bootstrap_theme' ? '' : "-$theme";
-    foreach ($this->theme->getAncestry(TRUE) as $ancestor) {
-      $file = $ancestor->getPath() . "/css/{$version}/overrides{$theme}.min.css";
-      if (file_exists($file)) {
-        $overrides = $file;
-      }
-    }
-    return $overrides;
   }
 
   /**

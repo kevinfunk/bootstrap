@@ -438,8 +438,9 @@ class Theme {
       // Only continue if the theme is Bootstrap based.
       if ($this->isBootstrap()) {
         $provider_manager = new ProviderManager($this);
-        foreach (array_keys($provider_manager->getDefinitions()) as $provider) {
-          if ($provider === 'none' || $provider === '_broken') {
+        foreach ($provider_manager->getDefinitions() as $provider => $definition) {
+          // Ignore hidden providers.
+          if (!empty($definition['hidden'])) {
             continue;
           }
           $this->cdnProviders[$provider] = $provider_manager->get($provider, ['theme' => $this]);

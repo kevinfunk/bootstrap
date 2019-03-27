@@ -11,6 +11,7 @@ namespace Drupal\bootstrap\Plugin\Provider;
  *   id = "_broken",
  *   label = @Translation("Broken"),
  *   description = @Translation("Broken CDN Provider instance."),
+ *   hidden = true,
  * )
  */
 class Broken extends ProviderBase {

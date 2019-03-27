@@ -351,6 +351,19 @@ class Bootstrap {
     return static::getTheme('bootstrap')->getPath() . '/autoload-fix.php';
   }
 
+  /**
+   * Checks whether a specific URL is reachable.
+   *
+   * @param string $url
+   *   The URL to check.
+   * @param array $options
+   *   Additional options to pass to the HTTP client.
+   * @param \Exception|null $exception
+   *   Any Exceptions throw, passed by reference.
+   *
+   * @return \Drupal\bootstrap\SerializedResponse
+   *   A SerializedResponse object.
+   */
   public static function checkUrlIsReachable($url, array $options = [], &$exception = NULL) {
     $options['method'] = 'HEAD';
     $options['ttl'] = 0;
@@ -383,7 +396,10 @@ class Bootstrap {
     unset($options['ttl']);
 
     $cache = \Drupal::keyValueExpirable('theme:' . static::getTheme()->getName() . ':http');
-    $hash = Crypt::generateBase64HashIdentifier($options, ['request', $url]);
+
+    // The URL cannot be part of the prefix as the "name" field of
+    // "key_value_expire" has a max length of 128.
+    $hash = Crypt::generateBase64HashIdentifier(['url' => $url] + $options, 'request');
     $response = $cache->get($hash);
 
     if (!isset($response)) {
@@ -404,8 +420,23 @@ class Bootstrap {
       }
 
       // Only cache if a maximum age has been detected.
-      if ($response->getStatusCode() == 200 && ($maxAge = isset($ttl) ? $ttl : $response->getMaxAge())) {
-        $cache->setWithExpire($hash, $response, $maxAge);
+      $maxAge = (int) isset($ttl) ? $ttl : $response->getMaxAge();
+      if ($response->getStatusCode() == 200 && $maxAge > 0) {
+        // Due to key_value_expire setting the "expire" field to "INT(11)", it
+        // is technically limited to a 32bit max value (Y2K38 bug).
+        // @todo Remove this once this is no longer an issue.
+        // @see https://www.drupal.org/project/drupal/issues/65474
+        // @see https://www.drupal.org/project/drupal/issues/1003692
+        $requestTime = \Drupal::time()->getRequestTime();
+        if (($requestTime + $maxAge) > 2147483647) {
+          $maxAge = 2147483647 - $requestTime;
+        }
+        try {
+          $cache->setWithExpire($hash, $response, $maxAge);
+        }
+        catch (\Exception $e) {
+          // Intentionally do nothing, tried to cache response... it failed.
+        }
       }
     }
 
