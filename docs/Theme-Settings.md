@@ -10,7 +10,7 @@ stored and at what point in the process they are accessed.
 
 There are essentially four places where theme settings do or could reside:
 
-1. **Install Config** - `./THEMENAME/config/install/THEMENAME.settings.yml`  
+1. **Install Config** - `./themes/THEMENAME/config/install/THEMENAME.settings.yml`  
    This is the install config only. They will only be set upon the initial
    installation of a theme. This is **not** like previous Drupal implementations
    where changes made here are reflected after a cache rebuild. The only way

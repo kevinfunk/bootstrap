@@ -20,12 +20,13 @@ function _find_autoloader($dir) {
   else if (empty($dir) || $dir === DIRECTORY_SEPARATOR) {
     return FALSE;
   }
-  return _find_autoloader(realpath("$dir/.."));
+  return _find_autoloader(dirname($dir));
 }
 
 $autoloader = _find_autoloader(empty($_SERVER['PWD']) ? getcwd() : $_SERVER['PWD']);
 if (!$autoloader || !class_exists('\Drupal\Core\DrupalKernel')) {
-  throw new \Exception("This script must be invoked inside a Drupal 8 environment. Unable to continue.");
+  print "This script must be invoked inside a Drupal 8 environment. Unable to continue.\n";
+  exit();
 }
 
 // Create a DrupalKernel instance.

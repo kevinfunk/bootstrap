@@ -26,7 +26,7 @@ recommended that you read the accompanying PHP based documentation on the
 classes and methods responsible for actually retrieving, parsing and caching
 the data from the CDN's API.
 
-Create a file at `./THEMENAME/src/Plugin/Provider/MyCdn.php` with the
+Create a file at `./themes/THEMENAME/src/Plugin/Provider/MyCdn.php` with the
 following contents:
 
 ```php
