@@ -91,7 +91,7 @@ the [Bootstrap Framework] source files, this base-theme does not and will not
 provide templates or suggest specific tools to use. It is up to you, the
 developer, to figure out which solution is best for your particular needs.
 
-### LESS (#less)
+### LESS {#less}
 - You must understand the basic concept of using the [Less] CSS pre-processor.
 - You must use a **[local Less compiler](https://www.google.com/search?q=less+compiler)**.
 - You must use the latest `3.x.x` version of [Bootstrap Framework LESS Source Files]
@@ -99,7 +99,7 @@ developer, to figure out which solution is best for your particular needs.
 - You must download a copy of [Drupal Bootstrap Styles] and copy over the `less`
   folder located at `./drupal-bootstrap-styles/src/3.x.x/8.x-3.x/less`.
 
-### SASS (#sass)
+### SASS {#sass}
 - You must understand the basic concept of using the [Sass] CSS pre-processor.
 - You must use a **[local Sass compiler](https://www.google.com/search?q=sass+compiler)**.
 - You must use the latest `3.x.x` version of [Bootstrap Framework SASS Source Files]
@@ -107,7 +107,7 @@ developer, to figure out which solution is best for your particular needs.
 - You must download a copy of [Drupal Bootstrap Styles] and copy over the `scss`
   folder located at `./drupal-bootstrap-styles/src/3.x.x/8.x-3.x/scss`.
 
-### Compile (#compile)
+### Compile {#compile}
 
 Download and extract the source files into the root of your new sub-theme:
 `./themes/THEMENAME`. After it has been extracted, the directory should be
