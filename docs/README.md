@@ -23,9 +23,6 @@ a base theme like this.
 #### [Theme Settings](<!-- @url theme_settings -->)
 
 #### [Sub-Theming](<!-- @url sub_theming -->)
-- [CDN Starterkit](<!-- @url sub_theming_cdn -->)
-- [Less Starterkit](<!-- @url sub_theming_less -->)
-- [Sass Starterkit](<!-- @url sub_theming_sass -->)
 
 #### [Templates](<!-- @url templates -->)
 
