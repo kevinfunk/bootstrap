@@ -12,7 +12,7 @@ define('BOOTSTRAP_CDN_PROVIDER_PATH', 'public://bootstrap/cdn_providers');
 /**
  * Retrieves JSON from a URI.
  *
- * @param string $uri
+ * @param string $url
  *   The URI to retrieve JSON from.
  * @param array $options
  *   The options to pass to the HTTP client.
@@ -22,7 +22,7 @@ define('BOOTSTRAP_CDN_PROVIDER_PATH', 'public://bootstrap/cdn_providers');
  * @return array
  *   The requested JSON array.
  */
-function _bootstrap_cdn_provider_request_json($uri, array $options = array(), &$exception = NULL) {
+function _bootstrap_cdn_provider_request_json($url, array $options = array(), &$exception = NULL) {
   $json = array();
 
   $options += array(
@@ -33,7 +33,10 @@ function _bootstrap_cdn_provider_request_json($uri, array $options = array(), &$
   );
 
   try {
-    $response = drupal_http_request($uri, $options);
+    $response = drupal_http_request($url, $options);
+    if (!empty($response->error)) {
+      throw new \Exception($response->error, $response->code);
+    }
     if ($response->code == 200) {
       $json = drupal_json_decode($response->data) ?: array();
     }
@@ -43,6 +46,90 @@ function _bootstrap_cdn_provider_request_json($uri, array $options = array(), &$
   }
 
   return $json;
+}
+
+/**
+ * Retrieves the Drupal Bootstrap Styles to use with CDN assets.
+ *
+ * @param string $version
+ *   A specific version to use. If not set, the currently set CDN Provider
+ *   version will be used.
+ * @param string $theme
+ *   A specific theme to use. If not set, the currently set CDN Provider
+ *   theme will be used.
+ *
+ * @return string|false
+ *   The URL to the styles or FALSE if it doesn't exist.
+ */
+function _bootstrap_cdn_get_drupal_bootstrap_styles_url($version = NULL, $theme = NULL) {
+  global $theme_key;
+  static $styles;
+
+  if (!isset($provider)) {
+    $provider = bootstrap_setting('cdn_provider', NULL, 'bootstrap', 'jsdelivr');
+  }
+
+  if (!isset($version)) {
+    $version = bootstrap_setting('cdn_' . $provider . '_version') ?: BOOTSTRAP_VERSION;
+  }
+
+  if (!isset($theme)) {
+    $theme = bootstrap_setting('cdn_' . $provider . '_theme') ?: 'bootstrap';
+  }
+
+
+  $cid = "theme_registry:$theme_key:drupal_bootstrap_styles";
+  $min = variable_get('preprocess_css', FALSE) ? '.min' : '';
+  $key = "$provider:$version:$theme$min";
+
+  if (!isset($styles)) {
+    // Allow sites to manually specify a custom path or URL.
+    if ($data = variable_get('drupal_bootstrap_styles')) {
+      $styles = array($key => $data);
+    }
+    // Otherwise, attempt to load cached database data.
+    else {
+      $styles = ($cache = cache_get($cid)) && !empty($cache->data) ? $cache->data : array();
+    }
+  }
+
+  if (!isset($styles[$key])) {
+    // Determine the latest @unicorn-fail/drupal-bootstrap-styles version.
+    if (!isset($styles['versions'])) {
+      $json = _bootstrap_cdn_provider_request_json('https://data.jsdelivr.com/v1/package/npm/@unicorn-fail/drupal-bootstrap-styles');
+      $json += array('versions' => array());
+      natsort($json['versions']);
+      $styles['versions'] = $json['versions'];
+    }
+
+    // Latest version should be the last entry.
+    $pkg_version = end($styles['versions']);
+
+    // Retrieve the list of files from the actual distributed API JSON file in
+    // @unicorn-fail/drupal-bootstrap-styles (note the sub-domain difference).
+    if (!isset($styles["$pkg_version:files"])) {
+      $json = _bootstrap_cdn_provider_request_json("https://cdn.jsdelivr.net/npm/@unicorn-fail/drupal-bootstrap-styles@$pkg_version/dist/api.json");
+      $json += array('files' => array());
+      $styles["$pkg_version:files"] = array_filter($json['files'], function ($file) {
+        return !!preg_match('`^/?dist/(\d+\.\d+\.\d+)/7.x-3.x`', $file['name']);
+      });
+    }
+
+    $styles[$key] = FALSE;
+    $theme = $theme === 'bootstrap' || $theme === 'bootstrap_theme' ? '' : "-$theme";
+    foreach ($styles["$pkg_version:files"] as $file) {
+      if (!empty($file['name']) && $file['name'] === "/dist/$version/7.x-3.x/drupal-bootstrap$theme$min.css") {
+        $filename = !empty($file['symlink']) ? $file['symlink'] : $file['name'];
+        $styles[$key] = "https://cdn.jsdelivr.net/npm/@unicorn-fail/drupal-bootstrap-styles@$pkg_version$filename";
+        break;
+      }
+    }
+
+    // Now cache the styles.
+    cache_set($cid, $styles);
+  }
+
+  return $styles[$key];
 }
 
 /**

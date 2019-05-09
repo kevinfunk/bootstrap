@@ -52,80 +52,76 @@ abstract class ProviderBase {
    * {@inheritdoc}
    */
   public function alterFrameworkLibrary(array &$framework, $min = NULL) {
-    // Attempt to retrieve CDN assets from a sort of permanent cached in the
-    // theme settings. This is primarily used to avoid unnecessary API requests
-    // and speed up the process during a cache rebuild. Theme settings are used
-    // as they persist through cache rebuilds. In order to prevent stale data,
-    // a hash is used based on current CDN settings and this "permacache" is
-    // reset at least once a week regardless.
-    // @see https://www.drupal.org/project/bootstrap/issues/3031415
-    $cdnCache = bootstrap_setting('cdn_cache') ?: array();
+    // In Drupal 7, CSS and JS are separated into individual hooks and alters,
+    // so this has the potential to be invoked at a minimum of 3 times.
+    static $drupal_static_fast;
+    if (!isset($drupal_static_fast)) {
+      // Attempt to retrieve CDN assets from a sort of permanent cached in the
+      // theme settings. This is primarily used to avoid unnecessary API requests
+      // and speed up the process during a cache rebuild. Theme settings are used
+      // as they persist through cache rebuilds. In order to prevent stale data,
+      // a hash is used based on current CDN settings and this "permacache" is
+      // reset at least once a week regardless.
+      // @see https://www.drupal.org/project/bootstrap/issues/3031415
+      $cdnCache = variable_get('bootstrap_cdn_cache') ?: array();
 
-    // Reset cache if expired.
-    if (isset($cdnCache['expire']) && (empty($cdnCache['expire']) || REQUEST_TIME > $cdnCache['expire'])) {
-      $cdnCache = array();
-    }
-
-    // Set expiration date (1 week by default).
-    if (!isset($cdnCache['expire'])) {
-      $cdnCache['expire'] = REQUEST_TIME + bootstrap_setting('cdn_cache_expire', $this->themeName, 'bootstrap', 604800);
-    }
-
-    $cdnVersion = $this->getCdnVersion();
-    $cdnTheme = $this->getCdnTheme();
-
-    // Cache not found.
-    $cdnHash = drupal_hash_base64("{$this->pluginId}:$cdnTheme:$cdnVersion");
-    if (!isset($cdnCache[$cdnHash])) {
-      // Retrieve assets and reset cache (should only cache one at a time).
-      $cdnCache = array(
-        'expire' => $cdnCache['expire'],
-        $cdnHash => $this->getCdnAssets($cdnVersion, $cdnTheme),
-      );
-      _bootstrap_set_setting('cdn_cache', $cdnCache);
-    }
-
-    // Immediately return if there are no theme CDN assets to use.
-    if (empty($cdnCache[$cdnHash])) {
-      return;
-    }
-
-    // Retrieve the system performance config.
-    if (!isset($min)) {
-      $min = array(
-        'css' => variable_get('preprocess_css', FALSE),
-        'js' => variable_get('preprocess_js', FALSE),
-      );
-    }
-    else {
-      $min = array('css' => !!$min, 'js' => !!$min);
-    }
-
-    // Iterate over each type.
-    $assets = array();
-    foreach (array('css', 'js') as $type) {
-      $files = !empty($min[$type]) && isset($cdnCache[$cdnHash]['min'][$type]) ? $cdnCache[$cdnHash]['min'][$type] : (isset($cdnCache[$cdnHash][$type]) ? $cdnCache[$cdnHash][$type] : array());
-      foreach ($files as $asset) {
-        $assets[$type][$asset] = array('data' => $asset, 'type' => 'external');
+      // Reset cache if expired.
+      if (isset($cdnCache['expire']) && (empty($cdnCache['expire']) || REQUEST_TIME > $cdnCache['expire'])) {
+        $cdnCache = array();
       }
+
+      // Set expiration date (1 week by default).
+      if (!isset($cdnCache['expire'])) {
+        $cdnCache['expire'] = REQUEST_TIME + variable_get('bootstrap_cdn_cache_expire', 604800);
+      }
+
+      $cdnVersion = $this->getCdnVersion();
+      $cdnTheme = $this->getCdnTheme();
+
+      // Cache not found.
+      $cdnHash = drupal_hash_base64("{$this->pluginId}:$cdnTheme:$cdnVersion");
+      if (!isset($cdnCache[$cdnHash])) {
+        // Retrieve assets and reset cache (should only cache one at a time).
+        $cdnCache = array(
+          'expire' => $cdnCache['expire'],
+          $cdnHash => $this->getCdnAssets($cdnVersion, $cdnTheme),
+        );
+        variable_set('bootstrap_cdn_cache', $cdnCache);
+      }
+
+      // Immediately return if there are no theme CDN assets to use.
+      if (empty($cdnCache[$cdnHash])) {
+        return;
+      }
+
+      // Retrieve the system performance config.
+      if (!isset($min)) {
+        $min = array(
+          'css' => variable_get('preprocess_css', FALSE),
+          'js' => variable_get('preprocess_js', FALSE),
+        );
+      }
+      else {
+        $min = array('css' => !!$min, 'js' => !!$min);
+      }
+
+      // Iterate over each type.
+      $assets = array();
+      foreach (array('css', 'js') as $type) {
+        $files = !empty($min[$type]) && isset($cdnCache[$cdnHash]['min'][$type]) ? $cdnCache[$cdnHash]['min'][$type] : (isset($cdnCache[$cdnHash][$type]) ? $cdnCache[$cdnHash][$type] : array());
+        foreach ($files as $asset) {
+          $assets[$type][$asset] = array('data' => $asset, 'type' => 'external');
+        }
+      }
+
+      // Merge the assets into the library info.
+      $drupal_static_fast = drupal_array_merge_deep_array(array($assets, $framework));
+
+      // Override the framework version with the CDN version that is being used.
+      $drupal_static_fast['version'] = $cdnVersion;
     }
 
-    // Override the framework version with the CDN version that is being used.
-    $framework['version'] = $cdnVersion;
-
-    // Merge the assets into the library info.
-    $framework = drupal_array_merge_deep_array(array($assets, $framework));
-
-    // The overrides file must also be stored in the "base" category so
-    // it isn't added after any potential sub-theme's "theme" category.
-    // There's no weight, so it will be added after the provider's assets.
-    // Since this uses a relative path to the ancestor from DRUPAL_ROOT,
-    // the entire path must be prepended with a forward slash (/) so it
-    // doesn't prepend the active theme's path.
-    // @see https://www.drupal.org/node/2770613
-    if ($overrides = $this->getOverrides()) {
-      $framework['css']["/$overrides"] = array();
-    }
+    $framework = $drupal_static_fast;
   }
 
   /**
@@ -196,7 +192,7 @@ abstract class ProviderBase {
    *   The CDN provider cache identifier.
    */
   protected function getCacheId() {
-    return "theme:{$this->themeName}:provider:{$this->pluginId}";
+    return "theme_registry:{$this->themeName}:provider:{$this->pluginId}";
   }
 
   /**
@@ -265,24 +261,6 @@ abstract class ProviderBase {
    */
   public function getLabel() {
     return t(ucfirst($this->pluginId));
-  }
-
-  /**
-   * Retrieves the Drupal overrides CSS file.
-   *
-   * @return string|null
-   *   THe Drupal overrides CSS file.
-   */
-  protected function getOverrides() {
-    $version = $this->getCdnVersion();
-    $theme = $this->getCdnTheme();
-    $theme = !$theme || $theme === '_default' || $theme === 'bootstrap' || $theme === 'bootstrap_theme' ? '' : "-$theme";
-    foreach (_bootstrap_get_ancestry($this->themeName, TRUE) as $ancestor) {
-      $overrides = drupal_get_path('theme', $ancestor) . "/css/{$version}/overrides{$theme}.min.css";
-      if (file_exists($overrides)) {
-        return $overrides;
-      }
-    }
   }
 
   /**

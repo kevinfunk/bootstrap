@@ -194,6 +194,8 @@ function _bootstrap_backport_cdn_provider($theme = NULL, $provider = NULL) {
  *   is returned keyed by the type.
  */
 function bootstrap_get_cdn_assets($type = NULL, $provider = NULL, $theme = NULL) {
+  bootstrap_include('bootstrap', 'includes/cdn.inc');
+
   $original_type = $type;
   $assets = array();
   $types = array();
@@ -240,7 +242,6 @@ function bootstrap_get_cdn_assets($type = NULL, $provider = NULL, $theme = NULL)
   }
   // Otherwise, use the legacy CDN provider code.
   else {
-    bootstrap_include('bootstrap', 'includes/cdn.inc');
     if (!empty($provider) && ($data = bootstrap_cdn_provider($provider))) {
       // Alter the assets based on provider.
       $function = 'bootstrap_bootstrap_cdn_provider_' . $provider . '_assets_alter';
@@ -347,15 +348,30 @@ function bootstrap_get_theme_info($theme_key = NULL, $key = NULL, $base_themes =
  *   Name of the theme to use for base path.
  * @param string $path
  *   Path relative to $theme.
+ *
+ * @return string|false
+ *   The absolute path to the include file or FALSE if it doesn't exist.
  */
 function bootstrap_include($theme, $path) {
+  static $included = array();
   static $themes = array();
+
   if (!isset($themes[$theme])) {
     $themes[$theme] = drupal_get_path('theme', $theme);
   }
-  if ($themes[$theme] && ($file = DRUPAL_ROOT . '/' . $themes[$theme] . '/' . $path) && file_exists($file)) {
-    include_once $file;
+
+  if (!isset($included["$theme:$path"])) {
+    $file = DRUPAL_ROOT . '/' . $themes[$theme] . '/' . $path;
+    if (file_exists($file)) {
+      include_once $file;
+    }
+    else {
+      $file = FALSE;
+    }
+    $included["$theme:$path"] = $file;
   }
+
+  return $included["$theme:$path"];
 }
 
 /**
