@@ -2,9 +2,9 @@
 <!-- @defgroup -->
 # Contributing
 
-Please read the @link faq FAQ @endlink and
-@link getting_started Getting Started @endlink topics first before creating
-an issue in this project's issue queue.
+Please read the [Getting Started](<!-- @url getting_started -->) topic and the
+other various topics on this site first before creating an issue in this
+project's issue queue.
 
 Anything that falls within the scope of existing documentation or answered
 questions will be marked as "Closed (works as designed)" or
