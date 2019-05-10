@@ -127,7 +127,7 @@ Please refer to the [Theme Settings](<!-- @url theme_settings -->) topic.
 
 ## Override Templates {#templates}
 Please refer to the [Templates](<!-- @url templates -->) and
-[Plugin System](<!-- @url plugins -->) topics.
+[Theme Registry](<!-- @url registry -->) topics.
 
 ## Enable Your New Sub-theme {#enable}
 In your Drupal site, navigate to `admin/appearance` and click the `Enable and
