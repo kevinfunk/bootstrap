@@ -1,6 +1,5 @@
 <!-- @file Overview of theme settings for Drupal Bootstrap based themes. -->
-<!-- @defgroup -->
-<!-- @ingroup -->
+<!-- @defgroup theme_settings -->
 # Theme Settings
 
 To override a setting, open `./subtheme/subtheme.info` and add the following:

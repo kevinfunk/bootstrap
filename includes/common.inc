@@ -2,22 +2,21 @@
 
 /**
  * @file
- * List of common helper functions for use in Bootstrap based themes.
+ * List of common helper functions for use in Drupal Bootstrap based themes.
+ */
+
+/**
+ * @defgroup utility Utilities
+ *
+ * List of common helper functions for use in Drupal Bootstrap based themes.
+ *
+ * @{
  */
 
 define('BOOTSTRAP_VERSION_MAJOR', 3);
 define('BOOTSTRAP_VERSION_MINOR', 4);
 define('BOOTSTRAP_VERSION_PATCH', 1);
 define('BOOTSTRAP_VERSION', BOOTSTRAP_VERSION_MAJOR . '.' . BOOTSTRAP_VERSION_MINOR . '.' . BOOTSTRAP_VERSION_PATCH);
-
-/**
- * @defgroup subtheme_helper_functions Helper Functions
- * @ingroup subtheme
- *
- * List of common helper functions for use in Drupal Bootstrap based themes.
- *
- * @{
- */
 
 /**
  * Converts an element description into a tooltip based on certain criteria.
@@ -1554,5 +1553,5 @@ function _bootstrap_use_path_breadcrumbs($theme = NULL) {
 }
 
 /**
- * @} End of "defgroup subtheme_helper_functions".
+ * @} End of "ingroup utility".
  */
