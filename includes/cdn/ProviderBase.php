@@ -301,11 +301,14 @@ abstract class ProviderBase {
 
     try {
       $response = drupal_http_request($uri, $options);
-      if ($response->code == 200) {
+      if (!empty($response->error)) {
+        throw new \Exception("$uri: {$response->error}", $response->code);
+      }
+      if ($response->code >= 200 && $response->code < 400) {
         $json = drupal_json_decode($response->data) ?: array();
       }
       else {
-        throw new \Exception($response->error);
+        throw new \Exception("$uri: Invalid response", $response->code);
       }
     }
     catch (\Exception $e) {

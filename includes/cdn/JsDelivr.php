@@ -288,14 +288,11 @@ class JsDelivr extends ProviderBase {
 
     // If bootstrap JSON could not be returned, provide defaults.
     if (!$json && $package === 'bootstrap') {
-      $version = BOOTSTRAP_VERSION;
       return array(
-        'css' => array(static::BASE_CDN_URL . "/$package@$version/dist/css/bootstrap.css"),
-        'js' => array(static::BASE_CDN_URL . "/$package@$version/dist/js/bootstrap.js"),
-        'min' => array(
-          'css' => array(static::BASE_CDN_URL . "/$package@$version/dist/css/bootstrap.min.css"),
-          'js' => array(static::BASE_CDN_URL . "/$package@$version/dist/js/bootstrap.min.js"),
-        ),
+        '/dist/css/bootstrap.css',
+        '/dist/js/bootstrap.js',
+        '/dist/css/bootstrap.min.css',
+        '/dist/js/bootstrap.min.js',
       );
     }
 
