@@ -116,7 +116,7 @@ class JsDelivr extends ProviderBase {
     if (!isset($this->versions[$package])) {
       $instance = $this;
       $this->versions[$package] = $this->cacheGet("versions.$package", array(), function ($versions) use ($package, $instance) {
-        $instance->getCdnVersionsPhp53Callback($versions, $package);
+        return $instance->getCdnVersionsPhp53Callback($versions, $package);
       });
     }
     return $this->versions[$package];
