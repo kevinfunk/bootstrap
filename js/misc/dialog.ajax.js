@@ -39,7 +39,7 @@
   Drupal.behaviors.dialog.prepareDialogButtons = function prepareDialogButtons($dialog) {
     var _this = this;
     var buttons = [];
-    var $buttons = $dialog.find('.form-actions').find('button, input[type=submit], .form-actions a.button');
+    var $buttons = $dialog.find('.form-actions').find('button, input[type=submit], a.button');
     $buttons.each(function () {
       var $originalButton = $(this)
         // Prevent original button from being tabbed to.
