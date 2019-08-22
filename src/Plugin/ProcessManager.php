@@ -46,6 +46,9 @@ class ProcessManager extends PluginManager {
       return $element;
     }
 
+    // Don't process twice.
+    $element['#bootstrap_ignore_process'] = TRUE;
+
     static $theme;
     if (!isset($theme)) {
       $theme = Bootstrap::getTheme();

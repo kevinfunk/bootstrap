@@ -37,6 +37,9 @@ class PrerenderManager extends PluginManager {
       return $element;
     }
 
+    // Don't pre-render twice.
+    $element['#bootstrap_ignore_pre_render'] = TRUE;
+
     $e = Element::create($element);
 
     if ($e->isType('machine_name')) {
