@@ -44,7 +44,7 @@ class Menu extends PreprocessBase implements PreprocessInterface {
         // If URL isn't a link, it's rendered as a <span> element. Add the
         // "navbar-text" class so it doesn't disrupt the navbar items.
         // @see https://www.drupal.org/project/bootstrap/issues/3053464
-        if ($item['url']->getRouteName() === '<nolink>') {
+        if ($item['url']->isRouted() && $item['url']->getRouteName() === '<nolink>') {
           $linkAttributes->addClass('navbar-text');
         }
       }
