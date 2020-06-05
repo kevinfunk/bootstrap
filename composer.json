@@ -25,6 +25,6 @@
     "docs": "https://drupal-bootstrap.org",
     "issues": "https://www.drupal.org/project/issues/bootstrap",
     "irc": "irc://irc.freenode.org/drupal-bootstrap",
-    "source": "http://cgit.drupalcode.org/bootstrap"
+    "source": "https://git.drupalcode.org/project/bootstrap"
   }
 }
