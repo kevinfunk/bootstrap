@@ -54,7 +54,7 @@ class Menu extends PreprocessBase implements PreprocessInterface {
       // around this, just rewrap attributes in core's native Attribute class.
       $item['attributes'] = new Attribute($wrapperAttributes->getArrayCopy());
       $item['link_attributes'] = new Attribute($linkAttributes->getArrayCopy());
-      if ($item['below']) {
+      if (!empty($item['below']) && is_array($item['below'])) {
         $this->convertAttributes($item['below']);
       }
     }
