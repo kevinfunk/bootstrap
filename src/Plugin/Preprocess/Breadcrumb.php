@@ -52,7 +52,7 @@ class Breadcrumb extends PreprocessBase implements PreprocessInterface {
     }
 
     // Add cache context based on url.
-    $variables->addCacheContexts(['url']);
+    $variables->addCacheContexts(['url', 'route', 'url.path', 'languages']);
   }
 
 }
