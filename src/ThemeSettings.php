@@ -3,7 +3,6 @@
 namespace Drupal\bootstrap;
 
 use Drupal\bootstrap\Plugin\Setting\DeprecatedSettingInterface;
-use Drupal\bootstrap\Plugin\Setting\SettingInterface;
 use Drupal\Core\Theme\ThemeSettings as CoreThemeSettings;
 use Drupal\Component\Utility\DiffArray;
 use Drupal\Component\Utility\NestedArray;
