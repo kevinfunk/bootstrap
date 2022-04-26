@@ -48,6 +48,13 @@ class ThemeSettings extends Config {
   protected $settings;
 
   /**
+   * Drupal\Core\File\FileUrlGeneratorInterface.
+   *
+   * @var \Drupal\Core\File\FileUrlGeneratorInterface
+   */
+  protected $fileUrlGenerator;
+
+  /**
    * {@inheritdoc}
    */
   public function __construct(Theme $theme) {
@@ -113,6 +120,8 @@ class ThemeSettings extends Config {
     // Cache the data and defaults.
     $cache->set('data', $this->data);
     $cache->set('defaults', $this->defaults);
+
+    $this->fileUrlGenerator = \Drupal::service('file_url_generator');
   }
 
   /**
@@ -275,7 +284,7 @@ class ThemeSettings extends Config {
       $logo_url = FALSE;
       foreach (['svg', 'png', 'jpg'] as $type) {
         if (file_exists($theme->getPath() . "/logo.$type")) {
-          $logo_url = file_create_url($theme->getPath() . "/logo.$type");
+          $logo_url = $this->fileUrlGenerator->generateString($theme->getPath() . "/logo.$type");
           break;
         }
       }
@@ -283,7 +292,7 @@ class ThemeSettings extends Config {
         $config->set('logo.url', $logo_url);
       }
       elseif (($logo_path = $config->get('logo.path')) && file_exists($logo_path)) {
-        $config->set('logo.url', file_create_url($logo_path));
+        $config->set('logo.url', $this->fileUrlGenerator->generateString($logo_path));
       }
     }
 
