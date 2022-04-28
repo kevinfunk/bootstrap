@@ -48,13 +48,6 @@ class ThemeSettings extends Config {
   protected $settings;
 
   /**
-   * Drupal\Core\File\FileUrlGeneratorInterface.
-   *
-   * @var \Drupal\Core\File\FileUrlGeneratorInterface
-   */
-  protected $fileUrlGenerator;
-
-  /**
    * {@inheritdoc}
    */
   public function __construct(Theme $theme) {
@@ -120,8 +113,6 @@ class ThemeSettings extends Config {
     // Cache the data and defaults.
     $cache->set('data', $this->data);
     $cache->set('defaults', $this->defaults);
-
-    $this->fileUrlGenerator = \Drupal::service('file_url_generator');
   }
 
   /**
@@ -254,6 +245,8 @@ class ThemeSettings extends Config {
    */
   public function getThemeConfig(Theme $theme, $active_theme = FALSE) {
     $config = new CoreThemeSettings($theme->getName());
+    /** @var \Drupal\Core\File\FileUrlGeneratorInterface $file_url_generator */
+    $file_url_generator = \Drupal::service('file_url_generator');
 
     // Retrieve configured theme-specific settings, if any.
     try {
@@ -284,7 +277,7 @@ class ThemeSettings extends Config {
       $logo_url = FALSE;
       foreach (['svg', 'png', 'jpg'] as $type) {
         if (file_exists($theme->getPath() . "/logo.$type")) {
-          $logo_url = $this->fileUrlGenerator->generateString($theme->getPath() . "/logo.$type");
+          $logo_url = $file_url_generator->generateString($theme->getPath() . "/logo.$type");
           break;
         }
       }
@@ -292,18 +285,21 @@ class ThemeSettings extends Config {
         $config->set('logo.url', $logo_url);
       }
       elseif (($logo_path = $config->get('logo.path')) && file_exists($logo_path)) {
-        $config->set('logo.url', $this->fileUrlGenerator->generateString($logo_path));
+        $config->set('logo.url', $file_url_generator->generateString($logo_path));
       }
     }
 
     // Generate the path to the favicon.
     if ($config->get('features.favicon')) {
       $favicon_url = $theme->getPath() . '/favicon.ico';
-      if ($config->get('favicon.use_default') && file_exists($favicon_url)) {
-        $config->set('favicon.url', file_create_url($favicon_url));
+      if ($favicon_url && $config->get('favicon.use_default') && file_exists($favicon_url)) {
+        $config->set('favicon.url', $file_url_generator->generateString($favicon_url));
       }
-      elseif ($favicon_path = $config->get('favicon.path')) {
-        $config->set('favicon.url', file_create_url($favicon_path));
+      else {
+        $favicon_path = $config->get('favicon.path');
+        if (file_exists($favicon_path)) {
+          $config->set('favicon.url', $file_url_generator->generateString($favicon_path));
+        }
       }
     }
 
