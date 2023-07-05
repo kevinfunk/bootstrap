@@ -1,5 +1,5 @@
 {
-  "name": "drupal/bootstrap",
+  "name": "kevinfunk/bootstrap",
   "description": "Built to use Bootstrap, a sleek, intuitive, and powerful front-end framework for faster and easier web development.",
   "type": "drupal-theme",
   "license": "GPL-2.0-or-later",
